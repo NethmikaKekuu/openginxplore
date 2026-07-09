@@ -19,7 +19,7 @@ import InfoTooltip from "../../../components/InfoToolTip";
 import { useDepartmentsByPortfolio } from "../../../hooks/useDepartmentsByPortfolio";
 
 
-const DepartmentTab = ({ selectedDate, ministryId }) => {
+const DepartmentTab = ({ selectedDate, ministryId, onSelectDepartment }) => {
   const { colors } = useThemeContext();
   const { selectedPresident } = useSelector((state) => state.presidency);
   const [searchQuery, setSearchQuery] = useState("");
@@ -281,7 +281,8 @@ const DepartmentTab = ({ selectedDate, ministryId }) => {
                     key={dep.id}
                     onMouseEnter={() => setHoveredDeptId(dep.id)}
                     onMouseLeave={() => setHoveredDeptId(null)}
-                    className={`flex flex-col rounded-lg  cursor-pointer transition-shadow border 
+                    onClick={() => onSelectDepartment?.(dep)}
+                    className={`flex flex-col rounded-lg  cursor-pointer transition-shadow border
                       ${hoveredDeptId === dep.id ? "shadow-md" : "shadow-sm"}`}
                     style={{ borderColor: selectedPresident.themeColorLight + "99" }}
                   >
@@ -322,6 +323,7 @@ const DepartmentTab = ({ selectedDate, ministryId }) => {
                       <Link
                         to={`/department-profile/${dep.id}`}
                         state={{ mode: "back", from: location.pathname + location.search }}
+                        onClick={(e) => e.stopPropagation()}
                         className="text-xs md:text-sm font-small hover:underline"
                         style={{ color: selectedPresident.themeColorLight }}
                       >
@@ -344,6 +346,7 @@ const DepartmentTab = ({ selectedDate, ministryId }) => {
                         return (
                           <Link
                             to={`/data?${outerParams.toString()}`}
+                            onClick={(e) => e.stopPropagation()}
                             className="text-xs md:text-sm font-normal hover:underline"
                             style={{ color: selectedPresident.themeColorLight }}
                           >
