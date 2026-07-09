@@ -35,7 +35,8 @@ import {
   PersonAddAlt1 as PersonAddAlt1Icon,
   Apartment as ApartmentIcon,
   People as PeopleIcon,
-  Landscape
+  Landscape,
+  ArrowBack as ArrowBackIcon,
 } from "@mui/icons-material";
 
 
@@ -725,7 +726,7 @@ const MinistryCardGrid = () => {
           sx={{
             display: "flex",
             flexDirection: { xs: "column", sm: "row" },
-            justifyContent: "flex-end",
+            justifyContent: activeStep !== 0 ? "space-between" : "flex-end",
             alignItems: { xs: "flex-end", sm: "center" },
             gap: 1, // reduced gap
             mb: 1,
@@ -734,6 +735,22 @@ const MinistryCardGrid = () => {
             width: "100%",
           }}
         >
+          {/* Back Button */}
+          {activeStep !== 0 && (
+            <Button
+              onClick={handleBack}
+              startIcon={<ArrowBackIcon sx={{ fontSize: "1rem" }} />}
+              sx={{
+                color: colors.textPrimary,
+                textTransform: "none",
+                fontFamily: "poppins",
+                fontSize: { xs: "0.75rem", md: "0.875rem" },
+              }}
+            >
+              Back
+            </Button>
+          )}
+
           <Box
             sx={{
               display: "flex",
