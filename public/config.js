@@ -11,7 +11,7 @@
 //     gaMeasurementId: "<google_analytics_measurement_id>"
 // };
 
-// active config for local development
+// for development
 window.configs = {
     apiUrl: "", // keep empty for local development, otherwise this redirects to the OpenGIN service
     apiUrlData: "/api", // keep '/api' for local development, otherwise this redirects to the BFF service

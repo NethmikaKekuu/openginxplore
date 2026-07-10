@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 const HierarchyEntry = ({
   title,
   titleColor,
-  titleFontWeight = 700,
+  titleFontWeight = 400,
   badge,
 }) => {
   return (
