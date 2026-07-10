@@ -1252,7 +1252,7 @@ const MinistryCardGrid = () => {
                                     "&::-webkit-scrollbar": { display: "none" },
                                   }}
                                 >
-                                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 4 }}>
                                     <PillTabToggle
                                       tabs={[
                                         { value: "bodies", label: "Bodies", icon: ApartmentIcon },
@@ -1262,6 +1262,7 @@ const MinistryCardGrid = () => {
                                       onChange={setActiveBodyTab}
                                       themeColor={selectedPresident.themeColorLight}
                                       textColor={colors.white}
+                                      sx={{ mb: 0 }}
                                     />
 
                                     {activeBodyTab === "bodies" && (

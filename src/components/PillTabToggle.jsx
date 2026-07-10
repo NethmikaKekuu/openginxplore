@@ -3,9 +3,9 @@ import { Box, Button, ToggleButton, ToggleButtonGroup } from "@mui/material";
 // Reusable pill-style tab switcher: a compact icon toggle on small screens,
 // full labeled buttons on md+ screens. Used wherever a card needs a
 // two-(or-more)-way tab switch (e.g. Departments/People, Bodies/People).
-const PillTabToggle = ({ tabs, value, onChange, themeColor, textColor }) => {
+const PillTabToggle = ({ tabs, value, onChange, themeColor, textColor, sx }) => {
   return (
-    <Box sx={{ display: "flex", gap: 2, mb: 4, justifyContent: { xs: "center", sm: "flex-start" } }}>
+    <Box sx={{ display: "flex", gap: 2, mb: 4, justifyContent: { xs: "center", sm: "flex-start" }, ...sx }}>
       {/* Toggle for xs and sm screens */}
       <ToggleButtonGroup
         value={value}
