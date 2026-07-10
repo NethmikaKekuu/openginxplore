@@ -1287,11 +1287,11 @@ const MinistryCardGrid = () => {
                                         {bodyListForDepartment.map((body) => (
                                           <div
                                             key={body.id}
-                                            className="flex flex-col rounded-lg border"
+                                            className="flex flex-col rounded-lg border overflow-hidden"
                                             style={{ borderColor: `${selectedPresident.themeColorLight}99` }}
                                           >
                                             <div
-                                              className="flex items-center gap-2 px-4 py-2 rounded-t-[7px]"
+                                              className="flex items-center gap-2 px-4 py-2"
                                               style={{
                                                 backgroundColor: `${selectedPresident.themeColorLight}99`,
                                                 minHeight: "70px",
