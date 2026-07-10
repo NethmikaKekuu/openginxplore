@@ -20,6 +20,8 @@ import PersonsTab from "./PersonsTab";
 import DepartmentTab from "./DepartmentTab";
 import InfoTooltip from "../../../components/InfoToolTip";
 import LandscapeRequired from "../../../components/landscapeRequired";
+import HierarchyEntry from "../../../components/HierarchyEntry";
+import HierarchyConnector from "../../../components/HierarchyConnector";
 
 import { ClipLoader } from "react-spinners";
 
@@ -1006,7 +1008,10 @@ const MinistryCardGrid = () => {
 
                       return (
                         <Step key={step.label} active={isStepActive} completed={false}>
-                          {step.label !== "Departments & People" && step.label !== "Bodies" && (
+                          {step.label === "Bodies" && (
+                            <HierarchyConnector color={colors.textMuted} />
+                          )}
+                          {step.label !== "Departments & People" && (
                             <StepLabel
                               StepIconComponent={() => (
                                 <StepIcon sx={{ fontSize: { xs: "1rem", md: "1.1rem" } }} label={step.label} />
@@ -1037,69 +1042,28 @@ const MinistryCardGrid = () => {
                               }}
                             >
                               {selectedCard && step.label === "Ministries" && activeStep !== 0 ? (
-                                <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 0.5 }}>
-                                  <Typography
-                                    component="span"
-                                    sx={{
-                                      color: colors.textPrimary,
-                                      fontSize: { xs: "0.8rem", md: "1.1rem" },
-                                      transition: "text-decoration 0.2s ease-in-out",
-                                    }}
-                                  >
-                                    {selectedCard.name}
-                                  </Typography>
-                                  {selectedCard.ministers?.[0]?.id ? (
-                                    <Link
-                                      to={`/person-profile/${selectedCard.ministers?.[0]?.id}`}
-                                      state={{
-                                        mode: "back",
-                                        from: location.pathname + location.search,
-                                      }}
-                                      style={{ textDecoration: "none" }}
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      <Box
-                                        sx={{
-                                          backgroundColor: selectedPresident.themeColorLight,
-                                          color: "#fff",
-                                          fontSize: { xs: "0.6rem", md: "0.9rem" },
-                                          borderRadius: "12px",
-                                          px: 1.5,
-                                          py: 0.7,
-                                          fontFamily: "poppins",
-                                          display: "inline-flex",
-                                          alignItems: "center",
-                                          lineHeight: 1,
-                                          mt: 0.2,
-                                          cursor: "pointer",
-                                          "&:hover": {
-                                            opacity: 0.9,
-                                          },
-                                        }}
-                                      >
-                                        {selectedCard.ministers?.[0]?.name}
-                                      </Box>
-                                    </Link>
-                                  ) : (
-                                    <Box
-                                      sx={{
-                                        backgroundColor: `${selectedPresident.themeColorLight}66`,
-                                        color: "#fff",
-                                        fontSize: { xs: "0.6rem", md: "0.9rem" },
-                                        borderRadius: "12px",
-                                        px: 1.5,
-                                        py: 0.7,
-                                        fontFamily: "poppins",
-                                        display: "inline-flex",
-                                        alignItems: "center",
-                                        lineHeight: 1,
-                                        mt: 0.2,
-                                      }}
-                                    >
-                                      {selectedCard.ministers?.[0]?.name}
-                                    </Box>
-                                  )}
-                                </Box>
+                                <HierarchyEntry
+                                  title={selectedCard.name}
+                                  titleColor={colors.textPrimary}
+                                  titleFontWeight={400}
+                                  badge={{
+                                    label: selectedCard.ministers?.[0]?.name,
+                                    to: selectedCard.ministers?.[0]?.id
+                                      ? `/person-profile/${selectedCard.ministers?.[0]?.id}`
+                                      : undefined,
+                                    state: {
+                                      mode: "back",
+                                      from: location.pathname + location.search,
+                                    },
+                                    color: selectedPresident.themeColorLight,
+                                    mutedColor: `${selectedPresident.themeColorLight}66`,
+                                  }}
+                                />
+                              ) : step.label === "Bodies" ? (
+                                <HierarchyEntry
+                                  title={selectedDepartment?.name}
+                                  titleColor={colors.textPrimary}
+                                />
                               ) : (
                                 <Typography
                                   component="span"
@@ -1415,44 +1379,6 @@ const MinistryCardGrid = () => {
                                     "&::-webkit-scrollbar": { display: "none" },
                                   }}
                                 >
-                                  {selectedDepartment && (
-                                    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", mb: 3 }}>
-                                      <Typography
-                                        component="span"
-                                        sx={{
-                                          color: colors.textPrimary,
-                                          fontWeight: 700,
-                                          fontSize: { xs: "0.8rem", md: "1.1rem" },
-                                        }}
-                                      >
-                                        {selectedCard?.name}
-                                      </Typography>
-
-                                      <Box
-                                        sx={{
-                                          width: "2px",
-                                          height: 16,
-                                          ml: 2.2,
-                                          backgroundColor: colors.textMuted,
-                                        }}
-                                      />
-
-                                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                        <StepIcon sx={{ fontSize: { xs: "1rem", md: "1.1rem" } }} label="Bodies" />
-                                        <Typography
-                                          component="span"
-                                          sx={{
-                                            color: colors.textPrimary,
-                                            fontWeight: 700,
-                                            fontSize: { xs: "0.9rem", md: "1.2rem" },
-                                          }}
-                                        >
-                                          {selectedDepartment.name}
-                                        </Typography>
-                                      </Box>
-                                    </Box>
-                                  )}
-
                                   <Typography
                                     sx={{
                                       fontFamily: "poppins",
