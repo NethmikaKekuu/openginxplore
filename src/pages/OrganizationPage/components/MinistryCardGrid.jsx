@@ -11,6 +11,7 @@ import useUrlParamState from "../../../hooks/singleSharingURL";
 import { useActivePortfolioList } from "../../../hooks/useActivePortfolioList";
 import { usePrimeMinister } from "../../../hooks/usePrimeMinister";
 import { useDepartmentsByPortfolio } from "../../../hooks/useDepartmentsByPortfolio";
+import { useBodiesByDepartment } from "../../../hooks/useBodiesByDepartment";
 import useNetworkStatus from "../../../hooks/useNetworkStatus";
 
 import MinistryCard from "./MinistryCard";
@@ -42,23 +43,6 @@ import {
   Landscape,
   ArrowBack as ArrowBackIcon,
 } from "@mui/icons-material";
-
-// Demo-only placeholder bodies shown under a department. There's no real
-// "bodies" data source yet - this exists purely to demo the drill-down
-// hierarchy (Ministries -> Departments -> Bodies) for approval.
-const MOCK_BODY_NAMES = [
-  "Board of Directors",
-  "Regional Office",
-  "Advisory Committee",
-];
-
-const getMockBodiesForDepartment = (dep) => {
-  if (!dep) return [];
-  return MOCK_BODY_NAMES.map((name, idx) => ({
-    id: `${dep.id}-body-${idx}`,
-    name,
-  }));
-};
 
 const MinistryCardGrid = () => {
   const { selectedDate, selectedPresident } = useSelector(
@@ -96,6 +80,11 @@ const MinistryCardGrid = () => {
     departmentQueryDate
   );
   const departmentListForMinistry = departmentData?.departmentList || [];
+
+  const { data: bodyData, isLoading: isBodiesLoading } = useBodiesByDepartment(
+    selectedDepartment?.id
+  );
+  const bodyListForDepartment = bodyData?.bodyList || [];
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1275,23 +1264,43 @@ const MinistryCardGrid = () => {
                                   />
 
                                   {activeBodyTab === "bodies" && (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                                      {getMockBodiesForDepartment(selectedDepartment).map((body) => (
-                                        <div
-                                          key={body.id}
-                                          className="flex items-center gap-2 px-4 rounded-lg border"
-                                          style={{
-                                            borderColor: `${selectedPresident.themeColorLight}99`,
-                                            backgroundColor: `${selectedPresident.themeColorLight}99`,
-                                            minHeight: "70px",
-                                          }}
-                                        >
-                                          <span className="text-white font-normal text-xs md:text-sm font-poppins">
-                                            {body.name}
-                                          </span>
-                                        </div>
-                                      ))}
-                                    </div>
+                                    isBodiesLoading ? (
+                                      <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+                                        <ClipLoader color={selectedPresident.themeColorLight} size={30} />
+                                      </Box>
+                                    ) : (
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                                        {bodyListForDepartment.map((body) => (
+                                          <div
+                                            key={body.id}
+                                            className="flex flex-col rounded-lg border"
+                                            style={{ borderColor: `${selectedPresident.themeColorLight}99` }}
+                                          >
+                                            <div
+                                              className="flex items-center gap-2 px-4 py-2 rounded-t-[7px]"
+                                              style={{
+                                                backgroundColor: `${selectedPresident.themeColorLight}99`,
+                                                minHeight: "70px",
+                                                maxHeight: "70px",
+                                              }}
+                                            >
+                                              <span className="text-white font-normal text-xs md:text-sm leading-[1.4] font-poppins overflow-hidden text-ellipsis line-clamp-3">
+                                                {body.name}
+                                              </span>
+                                            </div>
+
+                                            <div className="flex items-center justify-between px-4 py-2 mt-auto">
+                                              <span
+                                                className="text-xs md:text-sm font-small hover:underline cursor-pointer"
+                                                style={{ color: selectedPresident.themeColorLight }}
+                                              >
+                                                History
+                                              </span>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )
                                   )}
 
                                   {activeBodyTab === "people" && (
