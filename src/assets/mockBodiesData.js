@@ -1,4 +1,4 @@
- mockBodiesData = {
+const mockBodiesData = {
   default: [
     { name: "Board of Directors" },
     { name: "Regional Office" },

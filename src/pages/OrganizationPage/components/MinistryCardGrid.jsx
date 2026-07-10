@@ -1252,16 +1252,29 @@ const MinistryCardGrid = () => {
                                     "&::-webkit-scrollbar": { display: "none" },
                                   }}
                                 >
-                                  <PillTabToggle
-                                    tabs={[
-                                      { value: "bodies", label: "Bodies", icon: ApartmentIcon },
-                                      { value: "people", label: "People", icon: PeopleIcon },
-                                    ]}
-                                    value={activeBodyTab}
-                                    onChange={setActiveBodyTab}
-                                    themeColor={selectedPresident.themeColorLight}
-                                    textColor={colors.white}
-                                  />
+                                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                    <PillTabToggle
+                                      tabs={[
+                                        { value: "bodies", label: "Bodies", icon: ApartmentIcon },
+                                        { value: "people", label: "People", icon: PeopleIcon },
+                                      ]}
+                                      value={activeBodyTab}
+                                      onChange={setActiveBodyTab}
+                                      themeColor={selectedPresident.themeColorLight}
+                                      textColor={colors.white}
+                                    />
+
+                                    {activeBodyTab === "bodies" && (
+                                      <Link
+                                        to={`/department-profile/${selectedDepartment?.id}`}
+                                        state={{ mode: "back", from: location.pathname + location.search }}
+                                        className="text-xs md:text-sm font-small hover:underline"
+                                        style={{ color: selectedPresident.themeColorLight }}
+                                      >
+                                        History
+                                      </Link>
+                                    )}
+                                  </Box>
 
                                   {activeBodyTab === "bodies" && (
                                     isBodiesLoading ? (
@@ -1286,15 +1299,6 @@ const MinistryCardGrid = () => {
                                             >
                                               <span className="text-white font-normal text-xs md:text-sm leading-[1.4] font-poppins overflow-hidden text-ellipsis line-clamp-3">
                                                 {body.name}
-                                              </span>
-                                            </div>
-
-                                            <div className="flex items-center justify-between px-4 py-2 mt-auto">
-                                              <span
-                                                className="text-xs md:text-sm font-small hover:underline cursor-pointer"
-                                                style={{ color: selectedPresident.themeColorLight }}
-                                              >
-                                                History
                                               </span>
                                             </div>
                                           </div>
