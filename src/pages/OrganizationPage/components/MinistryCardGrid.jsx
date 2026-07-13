@@ -61,12 +61,12 @@ const MinistryCardGrid = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { data, isLoading, error } = useActivePortfolioList(
+  const { data, isLoading } = useActivePortfolioList(
     selectedPresident?.id,
     selectedDate?.date
   );
 
-  const activeMinistryList = data?.portfolioList || [];
+  const activeMinistryList = useMemo(() => data?.portfolioList || [], [data]);
 
   const cabinetMinistriesCount = data?.NoOfCabinetMinistries || 0;
   const stateMinistriesCount = data?.NoOfStateMinistries || 0;
