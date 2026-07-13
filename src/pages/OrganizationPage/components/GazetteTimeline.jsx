@@ -446,6 +446,59 @@ export default function GazetteTimeline() {
           </IconButton>
         </Box>
       )}
+      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+        {gazetteData?.length > 0 && (
+          <Typography
+            sx={{
+              mt: "-50px",
+              mb: "30px",
+              fontSize: { xs: "0.7rem", md: "0.95rem" },
+              color: `${colors.textPrimary}99`,
+            }}
+          >
+            Gazettes published dates
+          </Typography>
+        )}
+        {gazetteData?.length == 0 && selectedDate && (
+          <Typography
+            variant="caption"
+            sx={{
+              color: colors.success || "#28a745",
+              fontWeight: 500,
+              textAlign: "center",
+              fontSize: 14,
+            }}
+          >
+            Information corresponds to the last date of selected range:{" "}
+            {new Date(selectedDate.date).toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })}
+          </Typography>
+        )}
+        {selectedDate?.date &&
+          !gazetteData.some((item) => item.date === selectedDate.date) &&
+          !gazetteData?.length == 0 && (
+            <Typography
+              variant="caption"
+              sx={{
+                color: colors.success || "#28a745",
+                fontWeight: 500,
+                textAlign: "center",
+                fontSize: 14,
+              }}
+            >
+              Information corresponds to the date:{" "}
+              {new Date(selectedDate.date).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}{" "}
+              (not a gazette published date)
+            </Typography>
+          )}
+      </Box>
     </Box>
   );
 }
