@@ -82,7 +82,8 @@ const MinistryCardGrid = () => {
   const departmentListForMinistry = departmentData?.departmentList || [];
 
   const { data: bodyData, isLoading: isBodiesLoading } = useBodiesByDepartment(
-    selectedDepartment?.id
+    selectedDepartment?.id,
+    departmentQueryDate
   );
   const bodyListForDepartment = bodyData?.bodyList || [];
 
