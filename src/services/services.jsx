@@ -49,6 +49,16 @@ export const getDepartmentsByPortfolio = async ({ portfolioId, date, signal, }) 
   return data;
 };
 
+export const getBodiesByDepartment = async ({ departmentId, date, signal }) => {
+  const { data } = await axios.post(
+    `${GI_SERVICE_URL}/bodies-by-department/${departmentId}`,
+    { date },
+    { signal }
+  );
+
+  return data;
+};
+
 export const getPrimeMinister = async ({ date, signal }) => {
   const { data } = await axios.post(
     `${GI_SERVICE_URL}/prime-minister`,
@@ -576,6 +586,7 @@ export default {
   getMinistriesByPerson,
   getPersonProfile,
   getDepartmentsByPortfolio,
+  getBodiesByDepartment,
   getPrimeMinister,
   getEntityNames
 };
