@@ -19,7 +19,7 @@ import InfoTooltip from "../../../components/InfoToolTip";
 import { useDepartmentsByPortfolio } from "../../../hooks/useDepartmentsByPortfolio";
 
 
-const DepartmentTab = ({ selectedDate, ministryId }) => {
+const DepartmentTab = ({ selectedDate, ministryId, onDepartmentClick }) => {
   const { colors } = useThemeContext();
   const { selectedPresident } = useSelector((state) => state.presidency);
   const [searchQuery, setSearchQuery] = useState("");
@@ -130,9 +130,9 @@ const DepartmentTab = ({ selectedDate, ministryId }) => {
                           gap: 0.5
                         }}
                       >
-                        Total Departments{" "}
+                        Total count{" "}
                         <InfoTooltip
-                          message="Total of departments under the minister on this date"
+                          message="Total number of departments, statutory institutions and public corporations under the minister on this date"
                           iconColor={colors.textPrimary}
                           iconSize={13}
                           placement="right"
@@ -186,9 +186,9 @@ const DepartmentTab = ({ selectedDate, ministryId }) => {
                           gap: 0.5
                         }}
                       >
-                        New Departments{" "}
+                        Newly added{" "}
                         <InfoTooltip
-                          message="Total of newly added departments to this minister on this date"
+                          message="Total number of newly added departments, statutory institutions and public corporations under this minister on this date"
                           iconColor={colors.textPrimary}
                           iconSize={13}
                           placement="right"
@@ -231,13 +231,13 @@ const DepartmentTab = ({ selectedDate, ministryId }) => {
                   mb: { xs: "6px", sm: "6px", md: 0 }
                 }}
               >
-                Departments
+                Departments, Statutory Institutions and Public Corporations
               </Typography>
 
               <Box>
                 <TextField
                   size="small"
-                  label="Search departments"
+                  label="Search"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   InputProps={{
@@ -279,9 +279,15 @@ const DepartmentTab = ({ selectedDate, ministryId }) => {
                 return (
                   <div
                     key={dep.id}
+                    role="button"
+                    tabIndex={0}
                     onMouseEnter={() => setHoveredDeptId(dep.id)}
                     onMouseLeave={() => setHoveredDeptId(null)}
-                    className={`flex flex-col rounded-lg  cursor-pointer transition-shadow border 
+                    onClick={() => onDepartmentClick?.(dep)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") onDepartmentClick?.(dep);
+                    }}
+                    className={`flex flex-col rounded-lg  cursor-pointer transition-shadow border
                       ${hoveredDeptId === dep.id ? "shadow-md" : "shadow-sm"}`}
                     style={{ borderColor: selectedPresident.themeColorLight + "99" }}
                   >
@@ -324,6 +330,7 @@ const DepartmentTab = ({ selectedDate, ministryId }) => {
                         state={{ mode: "back", from: location.pathname + location.search }}
                         className="text-xs md:text-sm font-small hover:underline"
                         style={{ color: selectedPresident.themeColorLight }}
+                        onClick={(e) => e.stopPropagation()}
                       >
                         History
                       </Link>
@@ -346,6 +353,7 @@ const DepartmentTab = ({ selectedDate, ministryId }) => {
                             to={`/data?${outerParams.toString()}`}
                             className="text-xs md:text-sm font-normal hover:underline"
                             style={{ color: selectedPresident.themeColorLight }}
+                            onClick={(e) => e.stopPropagation()}
                           >
                             Data
                           </Link>
