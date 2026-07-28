@@ -1,4 +1,29 @@
 import { getDatasetCategories } from "../services/searchServices";
+import {
+    parseDepartmentHistoryPeriod,
+    resolveGazetteDateOnOrAfter,
+} from "./gazetteDateUtils";
+
+/**
+ * Builds a Cabinet Structure deep-link URL from a department history timeline entry.
+ *
+ * @param {Object} entry - Department history entry with `period` and `ministry_id`
+ * @param {Array} gazetteDates - Gazette date data (e.g. Redux `gazetteDataClassic`)
+ * @returns {string} URL path with query params for `/organization`
+ */
+export function buildCabinetStructureUrlFromHistoryEntry(entry, gazetteDates) {
+    const { startDate, endDate } = parseDepartmentHistoryPeriod(entry?.period);
+    const selectedDate = resolveGazetteDateOnOrAfter(startDate, gazetteDates);
+
+    const params = new URLSearchParams();
+    params.set("view", "structure");
+    if (startDate) params.set("startDate", startDate);
+    if (endDate) params.set("endDate", endDate);
+    if (selectedDate) params.set("selectedDate", selectedDate);
+    if (entry?.ministry_id) params.set("ministry", entry.ministry_id);
+
+    return `/executive-branch?${params.toString()}`;
+}
 
 /**
  * Shared logic for handling a search result click.
@@ -61,7 +86,7 @@ export const handleResultNavigation = async (result, {
             params.set("filterByName", result.name);
 
             if (onComplete) onComplete();
-            navigate(`/organization?${params.toString()}`, {
+            navigate(`/executive-branch?${params.toString()}`, {
                 state: { searchResultName: result.name },
             });
             break;

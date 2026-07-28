@@ -54,12 +54,12 @@ const MinistryCardGrid = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { data, isLoading, error } = useActivePortfolioList(
+  const { data, isLoading } = useActivePortfolioList(
     selectedPresident?.id,
     selectedDate?.date
   );
 
-  const activeMinistryList = data?.portfolioList || [];
+  const activeMinistryList = useMemo(() => data?.portfolioList || [], [data]);
 
   const cabinetMinistriesCount = data?.NoOfCabinetMinistries || 0;
   const stateMinistriesCount = data?.NoOfStateMinistries || 0;
@@ -72,9 +72,13 @@ const MinistryCardGrid = () => {
     const params = new URLSearchParams(window.location.search);
     const ministryId = params.get("ministry");
 
-    if (!ministryId || activeMinistryList.length === 0) {
+    if (!ministryId) {
       setSelectedCard(null);
       setActiveStep(0);
+      return;
+    }
+
+    if (activeMinistryList.length === 0) {
       return;
     }
 
@@ -84,6 +88,7 @@ const MinistryCardGrid = () => {
 
     if (matchedCard) {
       setSelectedCard(matchedCard);
+      setActiveTab("departments");
       setActiveStep(1);
     }
   }, [location.search, activeMinistryList, viewMode]);
@@ -135,7 +140,7 @@ const MinistryCardGrid = () => {
       description: `All active ministries on this date`,
     },
     {
-      label: "Departments & People",
+      label: "Departments, Statutory Institutions and Public Corporations & People",
       description: "All departments under this ministry",
     },
   ];
@@ -144,7 +149,7 @@ const MinistryCardGrid = () => {
     let IconComponent = null;
 
     if (label === "Ministries") IconComponent = ApartmentIcon;
-    if (label === "Departments & People") IconComponent = PeopleIcon;
+    if (label === "Departments, Statutory Institutions and Public Corporations & People") IconComponent = PeopleIcon;
 
     if (!IconComponent) return null;
 
@@ -195,13 +200,22 @@ const MinistryCardGrid = () => {
       return;
     }
 
-    // Only reset if the date has actually changed to a new value
     if (selectedDate?.date && prevDateRef.current && selectedDate.date !== prevDateRef.current) {
       const params = new URLSearchParams(window.location.search);
-      params.delete("ministry");
-      setActiveStep(0);
-      const newUrl = `${window.location.pathname}?${params.toString()}`;
-      navigate(newUrl);
+      const isDeepLinkSync =
+        params.get("ministry") &&
+        params.get("selectedDate") === selectedDate.date;
+
+      if (!isDeepLinkSync) {
+        if (params.has("ministry")) {
+          params.delete("ministry");
+          params.set("selectedDate", selectedDate.date);
+          navigate(`${window.location.pathname}?${params.toString()}`);
+        }
+
+        setActiveStep(0);
+        setSelectedCard(null);
+      }
     }
 
     prevDateRef.current = selectedDate?.date;
@@ -211,6 +225,7 @@ const MinistryCardGrid = () => {
     // dispatch(setSelectedMinistry(card.id));
     handleNext();
     setSelectedCard(card);
+    setActiveTab("departments");
 
     const params = new URLSearchParams(window.location.search);
     params.set("ministry", card.id);
@@ -219,13 +234,7 @@ const MinistryCardGrid = () => {
   };
 
   return (
-    <Box
-      sx={{
-        px: { xs: 1, sm: 1, md: 2, lg: 2, xl: 2 },
-        mt: -2,
-        my: 2,
-      }}
-    >
+    <Box>
       <Box
         sx={{
           display: "grid",
@@ -741,7 +750,7 @@ const MinistryCardGrid = () => {
               justifyContent: "flex-end",
             }}
           >
-            {steps[activeStep]?.label !== "Departments & People" && !new URLSearchParams(location.search).has("ministry") && (
+            {steps[activeStep]?.label !== "Departments, Statutory Institutions and Public Corporations & People" && !new URLSearchParams(location.search).has("ministry") && (
               <>
                 {/* Search Bar */}
                 <Box
@@ -900,10 +909,10 @@ const MinistryCardGrid = () => {
                     }}
                     orientation="vertical"
                   >
-                    {steps.map((step, index) => {
-                      // Hide "Departments & People" step if it's not clickable
+                    {steps.map((step) => {
+                      // Hide "Departments, Statutory Institutions and Public Corporations & People" step if it's not clickable
                       if (
-                        step.label == "Departments & People" &&
+                        step.label == "Departments, Statutory Institutions and Public Corporations & People" &&
                         activeStep != 1
                       ) {
                         return null;
@@ -918,15 +927,16 @@ const MinistryCardGrid = () => {
                             onClick={
                               (activeStep != 0 &&
                                 step.label == "Ministries" &&
-                                selectedCard) ||
-                                (activeStep == 1 &&
-                                  step.label == "Departments & People")
+                                selectedCard)
                                 ? handleBack
                                 : null
                             }
                             sx={{
                               fontWeight: 700,
                               cursor: "pointer",
+                              ...(step.label !== "Ministries" && {
+                                display: "none",
+                              }),
                               "&:hover .MuiTypography-root": {
                                 textDecoration: "underline",
                               },
@@ -954,59 +964,65 @@ const MinistryCardGrid = () => {
                                 >
                                   {selectedCard.name}
                                 </Typography>
-                                {selectedCard.ministers?.[0]?.id ? (
-                                  <Link
-                                    to={`/person-profile/${selectedCard.ministers?.[0]?.id}`}
-                                    state={{
-                                      mode: "back",
-                                      from: location.pathname + location.search,
-                                    }}
-                                    style={{ textDecoration: "none" }}
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <Box
-                                      sx={{
-                                        backgroundColor: selectedPresident.themeColorLight,
-                                        color: "#fff",
-                                        fontSize: { xs: "0.6rem", md: "0.9rem" },
-                                        borderRadius: "12px",
-                                        px: 1.5,
-                                        py: 0.7,
-                                        fontFamily: "poppins",
-                                        display: "inline-flex",
-                                        alignItems: "center",
-                                        lineHeight: 1,
-                                        mt: 0.2,
-                                        cursor: "pointer",
-                                        "&:hover": {
-                                          opacity: 0.9,
-                                        },
-                                      }}
-                                    >
-                                      {selectedCard.ministers?.[0]?.name}
-                                    </Box>
-                                  </Link>
-                                ) : (
-                                  <Box
-                                    sx={{
-                                      backgroundColor: `${selectedPresident.themeColorLight}66`,
-                                      color: "#fff",
-                                      fontSize: { xs: "0.6rem", md: "0.9rem" },
-                                      borderRadius: "12px",
-                                      px: 1.5,
-                                      py: 0.7,
-                                      fontFamily: "poppins",
-                                      display: "inline-flex",
-                                      alignItems: "center",
-                                      lineHeight: 1,
-                                      mt: 0.2,
-                                    }}
-                                  >
-                                    {selectedCard.ministers?.[0]?.name}
-                                  </Box>
-                                )}
+                                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                                  {(selectedCard.ministers ?? []).map((minister, idx) =>
+                                    minister.id ? (
+                                      <Link
+                                        key={minister.id}
+                                        to={`/person-profile/${minister.id}`}
+                                        state={{
+                                          mode: "back",
+                                          from: location.pathname + location.search,
+                                        }}
+                                        style={{ textDecoration: "none" }}
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <Box
+                                          sx={{
+                                            backgroundColor: selectedPresident.themeColorLight,
+                                            color: "#fff",
+                                            fontSize: { xs: "0.6rem", md: "0.9rem" },
+                                            borderRadius: "12px",
+                                            px: 1.5,
+                                            py: 0.7,
+                                            fontFamily: "poppins",
+                                            display: "inline-flex",
+                                            alignItems: "center",
+                                            lineHeight: 1,
+                                            mt: 0.2,
+                                            cursor: "pointer",
+                                            "&:hover": {
+                                              opacity: 0.9,
+                                            },
+                                          }}
+                                        >
+                                          {minister.name}
+                                        </Box>
+                                      </Link>
+                                    ) : minister.name ? (
+                                      <Box
+                                        key={`${selectedCard.id}-minister-${idx}`}
+                                        sx={{
+                                          backgroundColor: `${selectedPresident.themeColorLight}66`,
+                                          color: "#fff",
+                                          fontSize: { xs: "0.6rem", md: "0.9rem" },
+                                          borderRadius: "12px",
+                                          px: 1.5,
+                                          py: 0.7,
+                                          fontFamily: "poppins",
+                                          display: "inline-flex",
+                                          alignItems: "center",
+                                          lineHeight: 1,
+                                          mt: 0.2,
+                                        }}
+                                      >
+                                        {minister.name}
+                                      </Box>
+                                    ) : null
+                                  )}
+                                </Box>
                               </Box>
-                            ) : (
+                            ) : step.label !== "Departments, Statutory Institutions and Public Corporations & People" && (
                               <Typography
                                 component="span"
                                 sx={{
@@ -1125,13 +1141,13 @@ const MinistryCardGrid = () => {
                               )} */}
                               </>
                             ) : (
-                              step.label == "Departments & People" && (
+                              step.label == "Departments, Statutory Institutions and Public Corporations & People" && (
                                 <DialogContent
                                   sx={{
                                     p: { xs: 0, sm: 0, md: 4 },
                                     borderRadius: { xs: 0, sm: 0, md: "14px" },
                                     mr: 1,
-                                    mt: 2,
+                                    mt: 0,
                                     display: "flex",
                                     flexDirection: "column",
                                     overflowY: "auto",
@@ -1181,7 +1197,7 @@ const MinistryCardGrid = () => {
                                         },
                                       }}
                                     >
-                                      {["departments", "people"].map((tab) => {
+                                      {(selectedCard?.type === "stateMinister" && !selectedCard?.ministers?.[0]?.id ? ["departments"] : ["departments", "people"]).map((tab) => {
                                         const label =
                                           tab.charAt(0).toUpperCase() +
                                           tab.slice(1);
@@ -1242,7 +1258,7 @@ const MinistryCardGrid = () => {
                                         gap: 2,
                                       }}
                                     >
-                                      {["departments", "people"].map((tab) => {
+                                      {(selectedCard?.type === "stateMinister" && !selectedCard?.ministers?.[0]?.id ? ["departments"] : ["departments", "people"]).map((tab) => {
                                         const label =
                                           tab.charAt(0).toUpperCase() +
                                           tab.slice(1);
@@ -1292,7 +1308,7 @@ const MinistryCardGrid = () => {
                                             ministryId={selectedCard?.id}
                                           />
                                         )}
-                                      {selectedCard && activeTab === "people" && (
+                                      {selectedCard && activeTab === "people" && (selectedCard.type !== "stateMinister" || selectedCard?.ministers?.[0]?.id) && (
                                         <PersonsTab
                                           selectedDate={
                                             selectedDate?.date || selectedDate

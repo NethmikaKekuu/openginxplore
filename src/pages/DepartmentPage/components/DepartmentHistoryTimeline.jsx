@@ -1,22 +1,39 @@
 import { useThemeContext } from "../../../context/themeContext";
 import { ClipLoader } from "react-spinners";
 import { Link, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import {
   VerticalTimeline,
   VerticalTimelineElement,
 } from "react-vertical-timeline-component";
 import { Landmark } from "lucide-react";
 import { useDepartmentHistory } from "../../../hooks/useDepartmentHistory";
+import { buildCabinetStructureUrlFromHistoryEntry } from "../../../utils/navigationUtils";
+
+// TODO: temp solution. Remove presidents' names from state and non cabinet ministries
+const PRESIDENTS_LIST = ["gotabaya rajapaksa", "ranil wickremesinghe", "anura kumara dissanayake"];
+
+const getMinisterName = (ministryName, ministerNameArg) => {
+  const lowerMinistry = (ministryName || "").toLowerCase();
+  const lowerMinister = (ministerNameArg || "").toLowerCase();
+
+  if (!((lowerMinistry.startsWith("state") || lowerMinistry.startsWith("non cabinet")) && PRESIDENTS_LIST.includes(lowerMinister))) {
+    return ministerNameArg
+  }
+  return ""
+}
 
 const DepartmentHistoryTimeline = ({ selectedDepartment }) => {
   const { colors, isDark } = useThemeContext();
   const location = useLocation();
+  const gazetteDataClassic = useSelector((s) => s.gazettes.gazetteDataClassic);
 
   const {
     data: departmentHistory,
     isLoading,
     error
   } = useDepartmentHistory(selectedDepartment?.id);
+
 
   return (
     <>
@@ -28,7 +45,7 @@ const DepartmentHistoryTimeline = ({ selectedDepartment }) => {
         <div className="flex flex-col items-center justify-center bg-transparent px-6 py-20">
           <div className="text-center max-w-md">
             <p className="text-sm text-gray-500 dark:text-gray-400 border-none mb-6">
-              Something went wrong. Couldn't load department history.
+              Something went wrong. Couldn't load department, statutory institution and public corporation history.
             </p>
           </div>
         </div>
@@ -40,6 +57,7 @@ const DepartmentHistoryTimeline = ({ selectedDepartment }) => {
             lineColor={isDark ? "#364153" : "#dbdbdb"}
           >
             {departmentHistory.map((entry, idx) => {
+              const ministerName = getMinisterName(entry.ministry_name, entry.minister_name);
               return (
                 <VerticalTimelineElement
                   key={idx}
@@ -56,9 +74,6 @@ const DepartmentHistoryTimeline = ({ selectedDepartment }) => {
                     border: `1px solid ${isDark ? "#364153" : "#dbdbdb"}`,
                     boxShadow: "none",
                     padding: "10px",
-                    paddingTop: "0px",
-                    marginBottom: "25px",
-                    marginTop: "15px",
                   }}
                   contentArrowStyle={{
                     borderRight: `7px solid ${isDark ? "#364153" : "#dbdbdb"}`,
@@ -67,12 +82,25 @@ const DepartmentHistoryTimeline = ({ selectedDepartment }) => {
                   dateClassName={"text-primary/65"}
                 >
                   <div>
-                    <p className="text-primary" style={{ fontSize: "1rem" }}>
+                    <Link
+                      to={buildCabinetStructureUrlFromHistoryEntry(
+                        entry,
+                        gazetteDataClassic
+                      )}
+                      state={{
+                        mode: "back",
+                        from: location.pathname + location.search,
+                        callback: true,
+                        callbackLink: location.state?.from,
+                      }}
+                      className="text-primary hover:underline transition-colors"
+                      style={{ fontSize: "1rem" }}
+                    >
                       {entry.ministry_name}
-                    </p>
+                    </Link>
                     <div className="flex items-center mt-1 space-x-3">
                       <div className="flex items-center justify-between">
-                        {entry.minister_name ? (
+                        {ministerName ? (
                           <Link
                             to={`/person-profile/${entry.minister_id}`}
                             state={{
@@ -81,13 +109,13 @@ const DepartmentHistoryTimeline = ({ selectedDepartment }) => {
                               callback: true,
                               callbackLink: location.state?.from,
                             }}
-                            className="text-accent text-normal font-medium hover:text-accent/80 transition-colors"
+                            className="text-accent text-normal font-medium hover:text-accent/80 hover:underline transition-colors"
                           >
-                            {entry.minister_name}
+                            {ministerName}
                           </Link>
                         ) : (
                           <span className="text-primary/25 italic">
-                            No Minister Assigned
+                            No Person Assigned
                           </span>
                         )}
                       </div>

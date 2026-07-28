@@ -3,9 +3,9 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useSelector } from "react-redux";
 import utils from "../../../utils/utils";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import Tooltip from "@mui/material/Tooltip";
+import { useLocation } from "react-router-dom";
 import { ChevronRight, ChevronLeft } from "lucide-react";
+import useClickOutside from "../../../hooks/useClickOutside";
 
 export default function TimeRangeSelector({
   startYear,
@@ -17,11 +17,7 @@ export default function TimeRangeSelector({
   activePresident,
   setActivePresident
 }) {
-  const [defaultStartDate] = useState(() => {
-    const date = new Date();
-    date.setFullYear(date.getFullYear() - 5);
-    return date;
-  });
+  const [defaultStartDate] = useState(() => new Date(Date.UTC(startYear, 0, 1)));
   const presidentsArray = useSelector(
     (state) => state.presidency.presidentDict
   );
@@ -32,6 +28,11 @@ export default function TimeRangeSelector({
   const containerRef = useRef(null);
   const dragStartRef = useRef(null);
   const scrollWrapperRef = useRef(null);
+  const dropdownRef = useRef(null);
+  const calendarRef = useRef(null);
+
+  useClickOutside(dropdownRef, () => setIsDropdownOpen(false))
+  useClickOutside(calendarRef, () => setCalendarOpen(false))
 
   // Helper: safely parse YYYY-MM-DD → Date
   const parseDate = (dateStr, fallback) => {
@@ -61,12 +62,16 @@ export default function TimeRangeSelector({
     if (selectedDateParam) {
       const targetDate = new Date(selectedDateParam);
       if (!(targetDate >= urlStart && targetDate <= urlEnd)) {
-        if (targetDate >= minDate && targetDate <= maxDate) {
-          urlStart = new Date(`${targetDate.getFullYear()}-01-01`);
-          urlEnd = new Date(`${targetDate.getFullYear()}-12-31`);
-        } else {
-          urlStart = minDate;
-          urlEnd = maxDate;
+        // Only auto-compute range from selectedDate when no explicit dates were given.
+        // If startDate/endDate are already in the URL, trust them as-is.
+        if (!startDateParam || !endDateParam) {
+          if (targetDate >= minDate && targetDate <= maxDate) {
+            urlStart = new Date(`${targetDate.getFullYear()}-01-01`);
+            urlEnd = new Date(`${targetDate.getFullYear()}-12-31`);
+          } else {
+            urlStart = minDate;
+            urlEnd = maxDate;
+          }
         }
       }
     } else {
@@ -92,12 +97,6 @@ export default function TimeRangeSelector({
   const [tempEndDate, setTempEndDate] = useState(initialEnd);
   const [preciseMode, setPreciseMode] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [tooltip, setTooltip] = useState({
-    show: false,
-    x: 0,
-    y: 0,
-    content: "",
-  });
   const [calendarRange, setCalendarRange] = useState(null);
   const [calendarStart, setCalendarStart] = useState(startDate);
   const [calendarEnd, setCalendarEnd] = useState(endDate);
@@ -112,6 +111,7 @@ export default function TimeRangeSelector({
     initialStart.getUTCFullYear(),
     initialEnd.getUTCFullYear(),
   ]);
+
   useEffect(() => {
     if (!externalRange) return;
 
@@ -192,15 +192,19 @@ export default function TimeRangeSelector({
 
       // If outside calculated range, update it
       if (!(targetDate >= urlStart && targetDate <= urlEnd)) {
-        // SelectedDate year is outside URL range but within available range → override range to full year
-        if (targetDate >= minDate && targetDate <= maxDate) {
-          urlStart = new Date(`${targetDate.getFullYear()}-01-01`);
-          urlEnd = new Date(`${targetDate.getFullYear()}-12-31`);
-        }
-        // SelectedDate outside available range → default
-        else {
-          urlStart = minDate;
-          urlEnd = maxDate;
+        // Only auto-compute range from selectedDate when no explicit dates were given.
+        // If startDate/endDate are already in the URL, trust them as-is.
+        if (!startDateParam || !endDateParam) {
+          // SelectedDate year is outside URL range but within available range → override range to full year
+          if (targetDate >= minDate && targetDate <= maxDate) {
+            urlStart = new Date(`${targetDate.getFullYear()}-01-01`);
+            urlEnd = new Date(`${targetDate.getFullYear()}-12-31`);
+          }
+          // SelectedDate outside available range → default
+          else {
+            urlStart = minDate;
+            urlEnd = maxDate;
+          }
         }
       }
     } else {
@@ -430,6 +434,7 @@ export default function TimeRangeSelector({
     () => getPreciseOverlayMetrics(),
     [startDate, endDate, tempEndDate, tempStartDate, selectedRange]
   );
+
   const handlePositions = React.useMemo(
     () => getHandlePositions(),
     [startDate, endDate, tempEndDate, tempStartDate, selectedRange]
@@ -623,6 +628,7 @@ export default function TimeRangeSelector({
     setIsDragging(null);
     setIsMovingWindow(false);
   };
+
   useEffect(() => {
     if (onDateChange && startDate && endDate) {
       onDateChange([startDate, endDate]);
@@ -770,7 +776,7 @@ export default function TimeRangeSelector({
   };
 
   return (
-    <div className="bg-background border-b border-border p-2 md:p-4 w-full mx-auto">
+    <div className="bg-card border-b border-border p-2 md:p-4 w-full mx-auto">
       {/* Presets and calendar */}
       <div className="hidden md:block pb-2 md:pb-4 px-1 text-primary text-center md:text-left md:px-0 text-xs md:text-sm font-medium md:font-semibold">
         Select a date range
@@ -815,9 +821,9 @@ export default function TimeRangeSelector({
               setActivePreset(preset.label);
               setActivePresident("");
             }}
-            className={`p-1 md:p-1.5 text-xs font-medium rounded-sm transition-colors hover:cursor-pointer ${activePreset === preset.label
-              ? "bg-accent/20 text-primary"
-              : "hover:bg-background/25 bg-foreground/10 text-primary hover:cursor-pointer"
+            className={`px-2 py-1 cursor-pointer rounded-md text-xs font-medium transition-colors border ${activePreset === preset.label
+              ? "bg-accent text-primary-foreground border-accent"
+              : "bg-card text-foreground border-border hover:bg-muted"
               }`}
           >
             {preset.label}
@@ -825,12 +831,12 @@ export default function TimeRangeSelector({
         ))}
 
         {/* Presidents dropdown */}
-        <div className="relative w-full md:w-56 text-xs">
+        <div ref={dropdownRef} className="relative w-full md:w-56 text-xs">
           {/* Main button */}
           <button
-            className={`w-full px-3 py-1.5 text-left font-medium cursor-pointer rounded-md focus:outline-none flex justify-between items-center ${activePresident
+            className={`w-full px-3 py-1.5 text-left font-medium cursor-pointer rounded-md focus:outline-none flex justify-between items-center border border-border ${activePresident
               ? "bg-accent/20 text-primary"
-              : "hover:bg-background/25 bg-foreground/10 text-primary hover:cursor-pointer"
+              : "hover:bg-muted bg-card text-primary hover:cursor-pointer"
               }`}
             onClick={() => setIsDropdownOpen((o) => !o)}
           >
@@ -950,19 +956,16 @@ export default function TimeRangeSelector({
         </div>
 
         {/* Calendar button */}
-        <div className="relative w-full md:w-auto">
+        <div ref={calendarRef} className="relative w-full md:w-auto">
           <button
             onClick={() => {
               setCalendarStart(startDate);
               setCalendarEnd(endDate);
               setCalendarOpen((o) => !o);
             }}
-            className={`flex items-center justify-center gap-2 w-full sm:w-auto px-2.5 py-1.5 text-xs rounded-md transition-colors cursor-pointer
-      ${calendarRange &&
-                startDate.toISOString() === calendarRange.start &&
-                endDate.toISOString() === calendarRange.end
-                ? "bg-accent text-white hover:bg-accent"
-                : "bg-foreground/10 text-primary font-medium hover:bg-border"
+            className={`flex items-center justify-center w-full sm:w-auto px-4 py-1.5 text-xs font-medium cursor-pointer rounded-md focus:outline-none border border-border ${calendarRange && startDate.toISOString() === calendarRange.start && endDate.toISOString() === calendarRange.end
+              ? "bg-accent/20 text-primary"
+              : "hover:bg-muted bg-card text-primary"
               }`}
           >
             By Date
@@ -1259,7 +1262,7 @@ export default function TimeRangeSelector({
                       });
                     }
                   }}
-                  className="px-3 py-1.5 bg-accent text-primary cursor-pointer rounded-md hover:bg-accent text-xs"
+                  className="px-3 py-1.5 bg-accent text-white cursor-pointer rounded-md hover:bg-accent text-xs"
                 >
                   Apply
                 </button>

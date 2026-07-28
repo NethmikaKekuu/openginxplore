@@ -27,6 +27,9 @@ export default function FilteredPresidentCards({ dateRange = [null, null] }) {
   const [urlInitComplete, setUrlInitComplete] = useState(false);
   const prevDateRangeRef = useRef([null, null]);
   const lastProcessedUrlRef = useRef("");
+  // Tracks if this session was initialized from a valid URL with a specific selectedDate or compareDates.
+  // When true, the dateRange (slider) effect skips auto-switching presidents.
+
 
   const location = useLocation()
 
@@ -92,10 +95,18 @@ export default function FilteredPresidentCards({ dateRange = [null, null] }) {
       : presStart;
     const finalEnd = rangeEnd ? new Date(Math.min(presEnd, rangeEnd)) : presEnd;
 
+    // Find if any other president starts on the same day this president ends.
+    const allRels = Object.values(presidentRelationDict);
+    const nextPresidentStartsOnSameDay = allRels.some((r) => {
+      if (!r.startTime) return false;
+      const rStart = new Date(r.startTime.split("T")[0]);
+      return rStart.getTime() === presEnd.getTime() && r !== rel;
+    });
+
     const filteredDates = gazetteDateClassic
       .filter((d) => {
         const dd = new Date(d.date);
-        return dd >= finalStart && dd < finalEnd;
+        return dd >= finalStart && (nextPresidentStartsOnSameDay ? dd < finalEnd : dd <= finalEnd);
       })
       .map((date) => (date));
 
@@ -136,25 +147,36 @@ export default function FilteredPresidentCards({ dateRange = [null, null] }) {
     let urlStartDate = params.get("startDate");
     let urlEndDate = params.get("endDate");
 
-    if (urlSelectedDate) {
-      const targetDate = new Date(urlSelectedDate);
-      let start = urlStartDate ? new Date(urlStartDate) : null;
-      let end = urlEndDate ? new Date(urlEndDate) : null;
+    let validSelectedDate = urlSelectedDate;
 
-      if (!start || !end || targetDate < start || targetDate > end) {
-        const year = targetDate.getFullYear();
-        urlStartDate = `${year}-01-01`;
-        urlEndDate = `${year}-12-31`;
-
-        const url = new URL(window.location.href);
-        url.searchParams.set("startDate", urlStartDate);
-        url.searchParams.set("endDate", urlEndDate);
-        window.history.replaceState({}, "", url.toString());
-
+    // If selectedDate is missing but we're in the changes view with compareDates, use the first date from compareDates
+    if (!validSelectedDate) {
+      const compareDates = params.get("compareDates");
+      if (compareDates) {
+        validSelectedDate = compareDates.split(",")[0];
       }
     }
 
-    const validSelectedDate = urlSelectedDate;
+    if (validSelectedDate) {
+      const targetDate = new Date(validSelectedDate);
+      let start = urlStartDate ? new Date(urlStartDate) : null;
+      let end = urlEndDate ? new Date(urlEndDate) : null;
+
+      // Only auto-compute range from selectedDate when no explicit dates were given.
+      // If startDate/endDate are already in the URL, trust them as-is.
+      if (!urlStartDate || !urlEndDate) {
+        if (!start || !end || targetDate < start || targetDate > end) {
+          const year = targetDate.getFullYear();
+          urlStartDate = `${year}-01-01`;
+          urlEndDate = `${year}-12-31`;
+
+          const url = new URL(window.location.href);
+          url.searchParams.set("startDate", urlStartDate);
+          url.searchParams.set("endDate", urlEndDate);
+          window.history.replaceState({}, "", url.toString());
+        }
+      }
+    }
 
     if (validSelectedDate) {
       const urlRange = [new Date(urlStartDate), new Date(urlEndDate)];
@@ -182,6 +204,8 @@ export default function FilteredPresidentCards({ dateRange = [null, null] }) {
         selectPresidentAndDates(presidentForDate, urlRange, validSelectedDate);
         setInitializedFromUrl(true);
         setUrlInitComplete(true);
+
+        lastProcessedUrlRef.current = window.location.search;
         return;
       }
     }
@@ -220,17 +244,24 @@ export default function FilteredPresidentCards({ dateRange = [null, null] }) {
     }
 
     // Check if this date range change matches the URL we just processed
-    const currentUrlSearch = location.search;
+    const currentUrlSearch = window.location.search;
     const params = new URLSearchParams(currentUrlSearch);
     const urlStartDate = params.get("startDate");
     const urlEndDate = params.get("endDate");
     const hasFilterByName = params.get("filterByName");
 
+    const formatLocalDate = (d) => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
     const dateRangeMatchesUrl =
       currStart && currEnd &&
       urlStartDate && urlEndDate &&
-      currStart.toISOString().split("T")[0] === urlStartDate &&
-      currEnd.toISOString().split("T")[0] === urlEndDate;
+      formatLocalDate(currStart) === urlStartDate &&
+      formatLocalDate(currEnd) === urlEndDate;
 
     // If date range doesn't match URL AND it's not a minister search navigation, 
     // this is a manual change - clear the processed URL
@@ -239,7 +270,23 @@ export default function FilteredPresidentCards({ dateRange = [null, null] }) {
     }
 
     // Don't auto-select if we just processed a URL change AND the date range matches that URL
-    if (lastProcessedUrlRef.current === currentUrlSearch && dateRangeMatchesUrl && currentUrlSearch.includes('selectedDate')) {
+    const isChangesView = params.get("view") === "changes";
+    const hasValidUrlState = currentUrlSearch.includes('selectedDate') || (isChangesView && currentUrlSearch.includes('compareDates'));
+
+    if (lastProcessedUrlRef.current === currentUrlSearch && dateRangeMatchesUrl && hasValidUrlState) {
+      prevDateRangeRef.current = dateRange;
+      return;
+    }
+
+
+    // Don't reset if the current president is still valid in the filtered list.
+    const currentPresidentIsValid =
+      selectedPresident && filteredPresidents.some((p) => p.id === selectedPresident.id);
+    if (currentPresidentIsValid) {
+      // Re-run the selection to update gazette bounds for the new date range.
+      // We don't pass selectedDate so it auto-selects the last available gazette date 
+      // within the new bounds, matching the user's expectations during slider drag.
+      selectPresidentAndDates(selectedPresident);
       prevDateRangeRef.current = dateRange;
       return;
     }
@@ -252,16 +299,33 @@ export default function FilteredPresidentCards({ dateRange = [null, null] }) {
     }
 
     prevDateRangeRef.current = dateRange;
-  }, [dateRange, filteredPresidents, initializedFromUrl, urlInitComplete]);
+  }, [dateRange, filteredPresidents, initializedFromUrl, urlInitComplete, location.search, selectedDate?.date]);
 
   useEffect(() => {
     if (!selectedDate?.date) return;
-    const url = new URL(window.location.href);
-    url.searchParams.set("selectedDate", selectedDate.date);
-    window.history.replaceState({}, "", url.toString());
-  }, [selectedDate]);
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("view") === "changes") return;
 
-  // Monitor URL parameter changes when already on /organization route
+    if (!initializedFromUrl) return;
+
+    const urlSelectedDate = params.get("selectedDate");
+    const urlMinistry = params.get("ministry");
+    const reduxDate = selectedDate.date;
+
+    // Don't clobber a ministry deep link while Redux is still catching up to the URL
+    if (urlMinistry && urlSelectedDate && urlSelectedDate !== reduxDate) {
+      return;
+    }
+
+    const url = new URL(window.location.href);
+    url.searchParams.set("selectedDate", reduxDate);
+    if (urlSelectedDate && urlSelectedDate !== reduxDate) {
+      url.searchParams.delete("ministry");
+    }
+    window.history.replaceState({}, "", url.toString());
+  }, [selectedDate, location.search, initializedFromUrl]);
+
+  // Monitor URL parameter changes when already on /executive-branch route
   useEffect(() => {
     // Only run after initial URL initialization is complete
     if (!initializedFromUrl) return;
@@ -326,6 +390,11 @@ export default function FilteredPresidentCards({ dateRange = [null, null] }) {
 
   return (
     <div className="rounded-lg w-full">
+      {dateRange && dateRange[0] && dateRange[1] && (
+        <div className="text-center text-[10px] md:text-xs text-primary/60 mb-4 px-1">
+          Presidents During The Period {new Date(dateRange[0]).toLocaleDateString("en-CA")} to {new Date(dateRange[1]).toLocaleDateString("en-CA")}
+        </div>
+      )}
       {filteredPresidents.length > 4 && (
         <input
           type="text"
@@ -357,8 +426,8 @@ export default function FilteredPresidentCards({ dateRange = [null, null] }) {
                 onClick={() => selectPresidentAndDates(president)}
                 className={`min-w-[60vw] sm:min-w-[300px] md:min-w-0 flex-shrink-0 snap-center flex items-center p-1.5 md:p-2 rounded-lg border transition-all duration-200 hover:cursor-pointer
     ${isSelected
-                    ? "bg-accent/20 border-accent/35 shadow-md"
-                    : "bg-foreground/5 border-primary/15 hover:bg-foreground/15"
+                    ? "bg-accent/20 border-accent/35 shadow-md opacity-100"
+                    : "bg-card border-border shadow-sm opacity-80 hover:opacity-100 hover:bg-accent/10 hover:border-accent/20"
                   }`}
               >
                 <PersonAvatar
@@ -383,7 +452,7 @@ export default function FilteredPresidentCards({ dateRange = [null, null] }) {
                       to={`/person-profile/${president?.id}`}
                       onClick={(e) => e.stopPropagation()}
                       state={{ mode: "back", from: location.pathname + location.search }}
-                      className="text-primary/75 text-xs md:text-sm hover:text-accent transition-all animation duration-200 mt-1 flex"
+                      className="text-primary/75 text-xs md:text-sm hover:text-accent transition-all animation duration-200 mt-1 flex items-center"
                     >
                       <EyeIcon size={16} className="mr-1" />
                       <p>View Profile</p>
