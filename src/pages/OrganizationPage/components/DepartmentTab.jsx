@@ -285,7 +285,10 @@ const DepartmentTab = ({ selectedDate, ministryId, onDepartmentClick }) => {
                     onMouseLeave={() => setHoveredDeptId(null)}
                     onClick={() => onDepartmentClick?.(dep)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") onDepartmentClick?.(dep);
+                        if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onDepartmentClick?.(dep);
+                    }                    
                     }}
                     className={`flex flex-col rounded-lg  cursor-pointer transition-shadow border
                       ${hoveredDeptId === dep.id ? "shadow-md" : "shadow-sm"}`}

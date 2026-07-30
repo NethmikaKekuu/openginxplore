@@ -322,6 +322,7 @@ export default function GraphComponent({ activeMinistries, filterType }) {
   };
 
   useEffect(() => {
+    let cancelled = false;
     const params = new URLSearchParams(location.search);
     const selectedMinistry = params.get("ministry");
     const selectedDepartment = params.get("department");
@@ -350,6 +351,7 @@ export default function GraphComponent({ activeMinistries, filterType }) {
             const responseDepartment = await queryClient.fetchQuery(
               departmentsByPortfolioQueryOptions(ministryParent.id, selectedDate?.date)
             );
+            if (cancelled) return;
             const departmentList = responseDepartment?.departmentList || [];
             const departmentItem = departmentList.find(
               (dep) => dep.id === selectedDepartment
@@ -367,13 +369,14 @@ export default function GraphComponent({ activeMinistries, filterType }) {
               group: 3,
               type: "department",
             };
-
+            if (cancelled) return;
             setParentStack([null, ministryParent]);
             await buildGraph(departmentParent);
           } catch (e) {
             console.error("Error building graph for department:", e.message);
+            if (cancelled) return;
             setParentStack([]);
-            buildGraph(ministryParent);
+            await buildGraph(ministryParent);
           }
         })();
       } else {
@@ -384,6 +387,9 @@ export default function GraphComponent({ activeMinistries, filterType }) {
       setParentStack([]);
       buildGraph();
     }
+    return () => {
+     cancelled = true;
+    };
   }, [
     selectedDate,
     selectedPresident,
@@ -504,7 +510,7 @@ export default function GraphComponent({ activeMinistries, filterType }) {
         n?.type === "department";
 
       setSelectedNode(node);
-      if (node?.type === "cabinetMinister" || node?.type === "stateMinister") {
+      if (node?.type === "cabinetMinister" || node?.type === "stateMinister" || node?.type === "department") {
         setNodeLoading(true);
       }
 
