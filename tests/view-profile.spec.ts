@@ -259,7 +259,7 @@ test('Profile full flow', async ({ page, browserName }, testInfo) => {
     await expect(profileCard).toBeVisible({ timeout: 20000 });
 
     // Step 3: Click View Profile
-    await profileCard.locator('a', { hasText: 'View Profile' }).first().click()({ timeout: 150000 });
+    await profileCard.locator('a', { hasText: 'View Profile' }).first().click({ timeout: 150000 });
     await page.waitForLoadState('domcontentloaded');
 
     // Step 4: URL check
