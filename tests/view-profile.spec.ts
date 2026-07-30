@@ -225,7 +225,7 @@ async function setupMocks(page) {
   // 7. POST /v1/organisation/** — active-portfolio-list, prime-minister, cabinet-flow.
   //    active-portfolio-list shape consumed by useActivePortfolioList as data.portfolioList
   //    etc — empty body is safe, MinistryCardGrid just shows "No ministries."
-  await page.route('**/v1/organisation/**', async (route) => {
+  await page.route('**/v1/executive-branch/**', async (route) => {
     await route.fulfill({ status: 200, contentType: 'application/json', json: mockEmptyBody });
   });
 
@@ -317,16 +317,18 @@ for (const viewport of VIEWPORTS) {
 
     // Step 9: Qualifications tab 
     const qualificationsTab = page.locator('button', { hasText: 'Qualifications' });
-    await expect(qualificationsTab).toBeVisible({ timeout: 10000 });
+    await qualificationsTab.scrollIntoViewIfNeeded();
+    await expect(qualificationsTab).toBeVisible();
+
     await qualificationsTab.click();
-    await expect(qualificationsTab).toHaveClass(/border-accent/, { timeout: 5000 });
+    await expect(qualificationsTab).toHaveClass(/border-accent/);
     await page.screenshot({ path: `test-results/qualifications-${viewport.name.toLowerCase()}-${browserName}.png` });
 
     // Step 10: Back button
     const backButton = page.locator('button', { hasText: 'Back' });
     await expect(backButton).toBeVisible({ timeout: 10000 });
     await backButton.click();
-    await expect(page).toHaveURL(/organization/, { timeout: 15000 });
+    await expect(page).toHaveURL(/executive-branch/, { timeout: 15000 });
     await page.screenshot({ path: `test-results/back-${viewport.name.toLowerCase()}-${browserName}.png` });
   });
 }
