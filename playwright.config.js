@@ -5,6 +5,8 @@ export default defineConfig({
 
   timeout: 60000,
 
+  retries: process.env.CI ? 2 : 0,
+
   reporter: [
     ['list'],
     ['monocart-reporter', {
@@ -23,6 +25,12 @@ export default defineConfig({
 
   use: {
     baseURL: 'http://localhost:5173',
+    // Takes a screenshot when a test fails
+    screenshot: 'only-on-failure',
+    // Records a full trace (DOM snapshots, network activity, etc) on the first retry of a failed test
+    trace: 'on-first-retry',
+    // (Optional) Automatically record video of failing tests
+    video: 'retain-on-failure',
   },
 
   webServer: {
@@ -32,20 +40,40 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
   },
 
-  workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI ? 1 : 2,
 
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: 'chromium-mobile',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 667, height: 375 } },
     },
     {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      name: 'chromium-tablet',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 } },
     },
     {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      name: 'chromium-desktop',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } },
+    },
+    {
+      name: 'firefox-tablet',
+      use: { ...devices['Desktop Firefox'], viewport: { width: 768, height: 1024 } },
+    },
+    {
+      name: 'firefox-desktop',
+      use: { ...devices['Desktop Firefox'], viewport: { width: 1280, height: 800 } },
+    },
+    {
+      name: 'webkit-mobile',
+      use: { ...devices['Desktop Safari'], viewport: { width: 667, height: 375 } },
+    },
+    {
+      name: 'webkit-tablet',
+      use: { ...devices['Desktop Safari'], viewport: { width: 768, height: 1024 } },
+    },
+    {
+      name: 'webkit-desktop',
+      use: { ...devices['Desktop Safari'], viewport: { width: 1280, height: 800 } },
     },
   ],
 });
