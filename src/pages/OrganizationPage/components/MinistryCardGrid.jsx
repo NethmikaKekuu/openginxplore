@@ -106,7 +106,7 @@ const MinistryCardGrid = () => {
         return;
       }
 
-      if (selectedDepartment?.id !== departmentId) {
+      if (String(selectedDepartment?.id) !== String(departmentId)) {
         (async () => {
           try {
             const response = await queryClient.fetchQuery(
@@ -125,7 +125,7 @@ const MinistryCardGrid = () => {
       }
     }
 
-  }, [location.search, activeMinistryList, viewMode, queryClient, selectedDate]);
+  }, [location.search, activeMinistryList, viewMode, queryClient, selectedDate, selectedDepartment?.id]);
 
   const {
     data: primeMinisterData,
