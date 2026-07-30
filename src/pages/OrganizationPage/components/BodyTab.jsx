@@ -18,7 +18,7 @@ const BodyTab = ({ departmentId }) => {
   const { selectedPresident } = useSelector((state) => state.presidency);
   const [hoveredBodyId, setHoveredBodyId] = useState(null);
 
-  const { data, isLoading } = useBodiesByDepartment(departmentId);
+  const { data, isLoading, isError} = useBodiesByDepartment(departmentId);
 
   const bodyList = data?.bodyList || [];
 
@@ -163,9 +163,8 @@ const BodyTab = ({ departmentId }) => {
             </div>
           ) : (
             <Box sx={{ width: "100%", mt: 4, display: "flex", justifyContent: "center" }}>
-              <Alert severity="info" sx={{ backgroundColor: "transparent", width: "100%", maxWidth: 600 }}>
-                <AlertTitle sx={{ fontFamily: "poppins", color: colors.textPrimary }}>
-                  Info: No bodies found.
+              <Alert severity={isError ? "error" : "info"} sx={{ backgroundColor: "transparent", width: "100%", maxWidth: 600 }}>                <AlertTitle sx={{ fontFamily: "poppins", color: colors.textPrimary }}>
+                    {isError ? "Error: Unable to load bodies." : "Info: No bodies found."}              
                 </AlertTitle>
               </Alert>
             </Box>
