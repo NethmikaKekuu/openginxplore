@@ -76,26 +76,74 @@ Calls two BFF endpoints and one static asset, then dispatches `setAllPerson`,
 // #1 — fetchAllPersons
 const mockEntitiesSearchPerson = {
   body: [
-    { id: '2403-03-01_cit_1', name: 'Anura Kumara Dissanayake', kind: {major:'Person',minor:'citizen'}, political_party: "National People's Power", image_url: '...' },
-    { id: '2149-34_cit_1', name: 'Gotabaya Rajapaksa', kind: {major:'Person',minor:'citizen'} },
-    { id: '2279-23_cit_1', name: 'Ranil Wickremesinghe', kind: {major:'Person',minor:'citizen'} },
+    {
+      id: PERSON_ID,
+      name: 'Test Person One',
+      kind: { major: 'Person', minor: 'citizen' },
+      political_party: 'Test Party A',
+      image_url: 'data/people/images/test-person-one.jpg',
+    },
+    {
+      id: '5678',
+      name: 'Test Person Two',
+      kind: { major: 'Person', minor: 'citizen' },
+    },
+    {
+      id: '9012',
+      name: 'Test Person Three',
+      kind: { major: 'Person', minor: 'citizen' },
+    },
   ],
   total: 3,
 };
 
 // #2 — fetchPresidentsData (plain array, not {body:...})
 const mockAsPresidentRelations = [
-  { id: '...', relatedEntityId: '2149-34_cit_1', name: 'AS_PRESIDENT', startTime: '2019-11-17T00:00:00Z', endTime: '2022-07-20T00:00:00Z', direction: 'OUTGOING' },
-  { id: '...', relatedEntityId: '2279-23_cit_1', name: 'AS_PRESIDENT', startTime: '2022-07-20T00:00:00Z', endTime: '2024-09-23T00:00:00Z', direction: 'OUTGOING' },
-  { id: '...', relatedEntityId: '2403-03-01_cit_1', name: 'AS_PRESIDENT', startTime: '2024-09-23T00:00:00Z', endTime: '', direction: 'OUTGOING' },
+  {
+    id: 'gov_01_5678_2025-10-27T12-25-37+05-30',
+    relatedEntityId: '5678',
+    name: 'AS_PRESIDENT',
+    startTime: '2019-11-17T00:00:00Z',
+    endTime: '2022-07-20T00:00:00Z',
+    direction: 'OUTGOING',
+  },
+  {
+    id: 'gov_01_9012_2025-10-27T12-35-25+05-30',
+    relatedEntityId: '9012',
+    name: 'AS_PRESIDENT',
+    startTime: '2022-07-20T00:00:00Z',
+    endTime: '2024-09-23T00:00:00Z',
+    direction: 'OUTGOING',
+  },
+  {
+    id: `gov_01_${PERSON_ID}_2025-10-27T12-39-59+05-30`,
+    relatedEntityId: PERSON_ID,
+    name: 'AS_PRESIDENT',
+    startTime: '2024-09-23T00:00:00Z',
+    endTime: '',
+    direction: 'OUTGOING',
+  },
 ];
 
 // #3 — personImages.json (array, NOT object-keyed-by-id)
 const mockPersonImages = [
-  { personName: 'Anura Kumara Dissanayake', imageUrl: '...', themeColorLight: '#2E7D32' },
-  { personName: 'Gotabaya Rajapaksa', imageUrl: '...', themeColorLight: '#1565C0' },
-  { personName: 'Ranil Wickremesinghe', imageUrl: '...', themeColorLight: '#6A1B9A' },
+  {
+    personName: 'Test Person One',
+    imageUrl: 'data/people/images/test-person-one.jpg',
+    themeColorLight: '#2E7D32',
+  },
+  {
+    personName: 'Test Person Two',
+    imageUrl: 'data/people/images/test-person-two.jpg',
+    themeColorLight: '#1565C0',
+  },
+  {
+    personName: 'Test Person Three',
+    imageUrl: 'data/people/images/test-person-three.jpg',
+    themeColorLight: '#6A1B9A',
+  },
 ];
+
 ```
 
 **Why #1's `id`s must match #2's `relatedEntityId`s:** the component does

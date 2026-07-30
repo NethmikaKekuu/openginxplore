@@ -9,6 +9,10 @@ export default defineConfig({
 
   reporter: [
     ['list'],
+    ['html', {
+    outputFolder: 'playwright-report',
+    open: 'never',
+    }],
     ['monocart-reporter', {
       name: 'Test Coverage Report',
       outputFile: 'test-results/report.html',

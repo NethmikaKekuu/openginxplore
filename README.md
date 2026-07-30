@@ -171,10 +171,21 @@ npx playwright test
 ```
 
 ### Run on a Single Browser
+
 ```bash
-npx playwright test --project=chromium
-npx playwright test --project=firefox
-npx playwright test --project=webkit
+# Chromium
+npx playwright test --project=chromium-mobile
+npx playwright test --project=chromium-tablet
+npx playwright test --project=chromium-desktop
+
+# Firefox
+npx playwright test --project=firefox-tablet
+npx playwright test --project=firefox-desktop
+
+# WebKit
+npx playwright test --project=webkit-mobile
+npx playwright test --project=webkit-tablet
+npx playwright test --project=webkit-desktop
 ```
 
 ### Run a Specific Test File
