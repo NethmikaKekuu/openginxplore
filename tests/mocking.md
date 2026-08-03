@@ -23,7 +23,7 @@ If *any* one of the 4 functions throws, its `catch` block sets `showServerError 
 
 Guessing endpoints shape doesnt work. Each one should be found in this order,
 1. **`dataLoadingAnimatedComponent.jsx`** — read first, to find the 4 top-level fetch functions and what Redux actions each one dispatches.
-2. **`src/services/services.js`** — read in full, to see the *real* `fetch()` calls inside each of those 4 functions: exact URL, HTTP method, request body, and critically, **what each function returns** (raw `Response` object vs. already-parsed JSON vs. a plain array) — this varies per function and is the single most common source of mock bugs.
+2. **`src/services/services.jsx`** — read in full, to see the *real* `fetch()` calls inside each of those 4 functions: exact URL, HTTP method, request body, and critically, **what each function returns** (raw `Response` object vs. already-parsed JSON vs. a plain array) — this varies per function and is the single most common source of mock bugs.
 3. **`src/utils/utils.jsx`** — read because several responses get passed through `extractNameFromProtobuf` / `decodeHexString`, which expect a specific `{value: <hex string>}` JSON-encoded shape.
 4. **Component tree, read top-down, to find rendering gates**:
    `HomePage.jsx` → `Organization.jsx` → `FilteredPresidentCards.jsx` /
@@ -42,7 +42,7 @@ Calls two BFF endpoints and one static asset, then dispatches `setAllPerson`,
 
 | # | Endpoint | Method | Request body | Response shape | Source function |
 |---|---|---|---|---|---|
-| 1 | `/v1/entities/search` | POST | `{kind:{major:"Person",minor:"citizen"}}` | `{body: Person[], total}` — raw `Response`, app calls `.json()` itself | `api.fetchAllPersons()` in `services.js` |
+| 1 | `/v1/entities/search` | POST | `{kind:{major:"Person",minor:"citizen"}}` | `{body: Person[], total}` — raw `Response`, app calls `.json()` itself | `api.fetchAllPersons()` in `services.jsx` |
 | 2 | `/v1/entities/gov_01/relations` | POST | `{name:"AS_PRESIDENT"}` | **Plain array** of relation objects — `services.js` returns `response.json()` directly, NOT wrapped in `{body:...}` | `api.fetchPresidentsData()` in `services.js` |
 | 3 | `/assets/personImages.json` | GET (static import) | — | **Array** of `{personName, imageUrl, themeColorLight}` | direct `import` in `dataLoadingAnimatedComponent.jsx` |
 
