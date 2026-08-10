@@ -5,14 +5,13 @@ import {
 import { useEffect, useRef, useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
 
 import { useThemeContext } from "../../../context/themeContext";
 import useUrlParamState from "../../../hooks/singleSharingURL";
 import { useActivePortfolioList } from "../../../hooks/useActivePortfolioList";
 import { usePrimeMinister } from "../../../hooks/usePrimeMinister";
 import useNetworkStatus from "../../../hooks/useNetworkStatus";
-import { departmentsByPortfolioQueryOptions } from "../../../hooks/useDepartmentsByPortfolio";
+import { useDepartmentsByPortfolio } from "../../../hooks/useDepartmentsByPortfolio";
 
 import MinistryCard from "./MinistryCard";
 import MinistryViewModeToggleButton from "../../../components/ministryViewModeToggleButton";
@@ -52,15 +51,11 @@ const MinistryCardGrid = () => {
   const [searchText, setSearchText] = useUrlParamState("filterByName", "");
   const [filterType, setFilterType] = useUrlParamState("filterByType", "all");
   const [viewMode, setViewMode] = useUrlParamState("viewMode", "Grid");
-  const [activeStep, setActiveStep] = useState(0);
   const [activeTab, setActiveTab] = useState("departments");
-  const [selectedCard, setSelectedCard] = useState(null);
-  const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [bodyDetailTab, setBodyDetailTab] = useState("bodies");
   const { colors } = useThemeContext();
   const location = useLocation();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const { data, isLoading } = useActivePortfolioList(
     selectedPresident?.id,
@@ -69,63 +64,52 @@ const MinistryCardGrid = () => {
 
   const activeMinistryList = useMemo(() => data?.portfolioList || [], [data]);
 
+  // --- URL params (read directly on each render, no state/useEffect needed) ---
+  const params = new URLSearchParams(location.search);
+  const urlMinistryId = params.get("ministry");
+  const urlDepartmentId = params.get("department");
+
+  // --- Derived selection state (replaces useState + useEffect sync) ---
+  const selectedCard = useMemo(() => {
+    if (!urlMinistryId || !activeMinistryList.length) return null;
+    return (
+      activeMinistryList.find(
+        (card) => String(card.id) === String(urlMinistryId)
+      ) || null
+    );
+  }, [urlMinistryId, activeMinistryList]);
+
+  const { data: departmentsData } = useDepartmentsByPortfolio(
+    selectedCard?.id || urlMinistryId,
+    selectedDate?.date
+  );
+
+  const selectedDepartment = useMemo(() => {
+    if (!urlDepartmentId || !departmentsData?.departmentList) return null;
+    return (
+      departmentsData.departmentList.find(
+        (dep) => String(dep.id) === String(urlDepartmentId)
+      ) || null
+    );
+  }, [urlDepartmentId, departmentsData]);
+
+  const activeStep = useMemo(() => {
+    if (!urlMinistryId) return 0;
+    if (urlDepartmentId) return 2;
+    return 1;
+  }, [urlMinistryId, urlDepartmentId]);
+
+  // activeTab has no URL param, so it stays as local state,
+  // but is reset whenever the selected ministry changes.
+  useEffect(() => {
+    setActiveTab("departments");
+  }, [selectedCard?.id]);
+
   const cabinetMinistriesCount = data?.NoOfCabinetMinistries || 0;
   const stateMinistriesCount = data?.NoOfStateMinistries || 0;
   const newMinistriesCount = data?.newMinistries || 0;
   const newMinistersCount = data?.newMinisters || 0;
   const ministriesUnderPresident = data?.ministriesUnderPresident || 0;
-
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const ministryId = params.get("ministry");
-
-    if (!ministryId) {
-      setSelectedCard(null);
-      setSelectedDepartment(null);
-      setActiveStep(0);
-      return;
-    }
-
-    if (activeMinistryList.length === 0) {
-      return;
-    }
-
-    const matchedCard = activeMinistryList.find(
-      (card) => String(card.id) === String(ministryId)
-    );
-
-    if (matchedCard) {
-      setSelectedCard(matchedCard);
-      setActiveTab("departments");
-      const departmentId = params.get("department");
-      setActiveStep(departmentId ? 2 : 1);
-
-      if (!departmentId) {
-        setSelectedDepartment(null);
-        return;
-      }
-
-      if (String(selectedDepartment?.id) !== String(departmentId)) {
-        (async () => {
-          try {
-            const response = await queryClient.fetchQuery(
-              departmentsByPortfolioQueryOptions(matchedCard.id, selectedDate?.date)
-            );
-            const departmentList = response?.departmentList || [];
-            const matchedDepartment = departmentList.find(
-              (dep) => String(dep.id) === String(departmentId)
-            );
-            setSelectedDepartment(matchedDepartment || null);
-          } catch (e) {
-            console.error("Error resolving department from URL:", e.message);
-            setSelectedDepartment(null);
-          }
-        })();
-      }
-    }
-
-  }, [location.search, activeMinistryList, viewMode, queryClient, selectedDate, selectedDepartment?.id]);
 
   const {
     data: primeMinisterData,
@@ -210,16 +194,9 @@ const MinistryCardGrid = () => {
     );
   };
 
-  const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-  };
-
   // Clicking the ministry name always returns to the ministries list,
   // regardless of how many levels deep (department/bodies) we currently are.
   const goToMinistriesList = () => {
-    setActiveStep(0);
-    setSelectedDepartment(null);
-
     const params = new URLSearchParams(window.location.search);
     params.delete("ministry");
     params.delete("department");
@@ -228,18 +205,13 @@ const MinistryCardGrid = () => {
 
   // Clicking the department name always returns to that ministry's department list.
   const goToDepartmentsList = () => {
-    setActiveStep(1);
-    setSelectedDepartment(null);
-
     const params = new URLSearchParams(window.location.search);
     params.delete("department");
     navigate(`${window.location.pathname}?${params.toString()}`);
   };
 
   const handleDepartmentClick = (dep) => {
-    setSelectedDepartment(dep);
     setBodyDetailTab("bodies");
-    setActiveStep(2);
 
     const params = new URLSearchParams(window.location.search);
     params.set("department", dep.id);
@@ -262,15 +234,10 @@ const MinistryCardGrid = () => {
         params.get("ministry") &&
         params.get("selectedDate") === selectedDate.date;
 
-      if (!isDeepLinkSync) {
-        if (params.has("ministry")) {
-          params.delete("ministry");
-          params.set("selectedDate", selectedDate.date);
-          navigate(`${window.location.pathname}?${params.toString()}`);
-        }
-
-        setActiveStep(0);
-        setSelectedCard(null);
+      if (!isDeepLinkSync && params.has("ministry")) {
+        params.delete("ministry");
+        params.set("selectedDate", selectedDate.date);
+        navigate(`${window.location.pathname}?${params.toString()}`);
       }
     }
 
@@ -278,9 +245,6 @@ const MinistryCardGrid = () => {
   }, [selectedDate?.date]);
 
   const handleCardClick = async (card) => {
-    // dispatch(setSelectedMinistry(card.id));
-    handleNext();
-    setSelectedCard(card);
     setActiveTab("departments");
 
     const params = new URLSearchParams(window.location.search);
