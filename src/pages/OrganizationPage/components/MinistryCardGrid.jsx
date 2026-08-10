@@ -236,6 +236,7 @@ const MinistryCardGrid = () => {
 
       if (!isDeepLinkSync && params.has("ministry")) {
         params.delete("ministry");
+        params.delete("department");
         params.set("selectedDate", selectedDate.date);
         navigate(`${window.location.pathname}?${params.toString()}`);
       }
@@ -248,6 +249,7 @@ const MinistryCardGrid = () => {
     setActiveTab("departments");
 
     const params = new URLSearchParams(window.location.search);
+    params.delete("department");
     params.set("ministry", card.id);
     const newUrl = `${window.location.pathname}?${params.toString()}`;
     navigate(newUrl);
