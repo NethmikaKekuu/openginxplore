@@ -18,7 +18,7 @@ const BodyTab = ({ departmentId }) => {
   const { selectedPresident } = useSelector((state) => state.presidency);
   const [hoveredBodyId, setHoveredBodyId] = useState(null);
 
-  const { data, isLoading, isError} = useBodiesByDepartment(departmentId);
+  const { data, isLoading, isError } = useBodiesByDepartment(departmentId);
 
   const bodyList = data?.bodyList || [];
 
@@ -48,11 +48,12 @@ const BodyTab = ({ departmentId }) => {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "flex-start",
-                width: { xs: "100%", sm: "100%", md: "40%" },
+                width: { xs: "100%", sm: "100%", md: "50%", lg: "40%" },
                 border: { xs: 0, sm: 0, md: `1px solid ${colors.backgroundWhite}` },
                 p: { xs: 0, sm: 0, md: 2 },
                 backgroundColor: colors.backgroundWhite,
-                borderRadius: { xs: 0, sm: 0, md: "14px" }
+                borderRadius: { xs: 0, sm: 0, md: "14px" },
+                mb: 2,
               }}
             >
               <Typography
@@ -84,17 +85,19 @@ const BodyTab = ({ departmentId }) => {
                     width: "100%",
                   }}
                 >
-                  <ApartmentIcon sx={{
-                    color: colors.textMuted,
-                    fontSize: { xs: "1rem", md: "1.2rem" },
-                  }} />
+                  <ApartmentIcon
+                    sx={{
+                      color: colors.textMuted,
+                      fontSize: { xs: "1rem", md: "1.2rem" },
+                    }}
+                  />
                   <Box
                     sx={{
                       flex: 1,
                       display: "flex",
-                      flexDirection: { xs: "column", sm: "row" },
-                      alignItems: { xs: "flex-start", sm: "center" },
-                      justifyContent: "space-between"
+                      flexDirection: { xs: "row", sm: "row" },
+                      alignItems: "center",
+                      justifyContent: "space-between",
                     }}
                   >
                     <Typography
@@ -105,7 +108,7 @@ const BodyTab = ({ departmentId }) => {
                         fontSize: { xs: "0.8rem", md: "1rem" },
                         display: "flex",
                         alignItems: "center",
-                        gap: 0.5
+                        gap: 0.5,
                       }}
                     >
                       Total Bodies{" "}
@@ -132,39 +135,71 @@ const BodyTab = ({ departmentId }) => {
             </Box>
           )}
 
+          {/* Body cards grid */}
           {bodyList.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-4">
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "repeat(1, 1fr)",
+                  sm: "repeat(2, 1fr)",
+                  md: "repeat(3, 1fr)",
+                  lg: "repeat(4, 1fr)",
+                },
+                gap: { xs: 1.5, sm: 2 },
+                mt: 2,
+              }}
+            >
               {bodyList.map((body) => (
-                <div
+                <Box
                   key={body.id}
                   onMouseEnter={() => setHoveredBodyId(body.id)}
                   onMouseLeave={() => setHoveredBodyId(null)}
-                  className="flex items-center gap-3 rounded-lg border px-4 py-3 transition-all"
-                  style={{
-                    backgroundColor: colors.backgroundWhite,
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.5,
+                    borderRadius: "8px",
+                    border: `1px solid ${colors.border}`,
+                    borderLeft: `4px solid ${selectedPresident.themeColorLight}`,
+                    px: 2,
+                    py: 1.5,
                     minHeight: "64px",
-                    borderColor: colors.border,
-                    borderLeftWidth: "4px",
-                    borderLeftColor: selectedPresident.themeColorLight,
+                    backgroundColor: colors.backgroundWhite,
                     boxShadow:
                       hoveredBodyId === body.id
                         ? "0 2px 8px rgba(0,0,0,0.08)"
                         : "none",
+                    transition: "box-shadow 0.2s ease-in-out",
                   }}
                 >
-                  <span
-                    className="font-normal text-xs md:text-sm leading-[1.4] font-poppins overflow-hidden text-ellipsis line-clamp-2"
-                    style={{ color: colors.textPrimary }}
+                  <Typography
+                    sx={{
+                      fontFamily: "Poppins",
+                      fontWeight: 400,
+                      fontSize: { xs: "0.75rem", md: "0.85rem" },
+                      lineHeight: 1.4,
+                      color: colors.textPrimary,
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
                   >
                     {body.name}
-                  </span>
-                </div>
+                  </Typography>
+                </Box>
               ))}
-            </div>
+            </Box>
           ) : (
             <Box sx={{ width: "100%", mt: 4, display: "flex", justifyContent: "center" }}>
-              <Alert severity={isError ? "error" : "info"} sx={{ backgroundColor: "transparent", width: "100%", maxWidth: 600 }}>                <AlertTitle sx={{ fontFamily: "poppins", color: colors.textPrimary }}>
-                    {isError ? "Error: Unable to load bodies." : "Info: No bodies found."}              
+              <Alert
+                severity={isError ? "error" : "info"}
+                sx={{ backgroundColor: "transparent", width: "100%", maxWidth: 600 }}
+              >
+                <AlertTitle sx={{ fontFamily: "poppins", color: colors.textPrimary }}>
+                  {isError ? "Error: Unable to load bodies." : "Info: No bodies found."}
                 </AlertTitle>
               </Alert>
             </Box>
