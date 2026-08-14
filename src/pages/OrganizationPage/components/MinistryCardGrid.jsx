@@ -52,7 +52,7 @@ const MinistryCardGrid = () => {
   const [filterType, setFilterType] = useUrlParamState("filterByType", "all");
   const [viewMode, setViewMode] = useUrlParamState("viewMode", "Grid");
   const [activeTab, setActiveTab] = useState("departments");
-  const [bodyDetailTab, setBodyDetailTab] = useState("bodies");
+  //const [bodyDetailTab, setBodyDetailTab] = useState("bodies");
   const { colors } = useThemeContext();
   const location = useLocation();
   const navigate = useNavigate();
@@ -211,7 +211,7 @@ const MinistryCardGrid = () => {
   };
 
   const handleDepartmentClick = (dep) => {
-    setBodyDetailTab("bodies");
+    //setBodyDetailTab("bodies");
 
     const params = new URLSearchParams(window.location.search);
     params.set("department", dep.id);
@@ -1164,7 +1164,7 @@ const MinistryCardGrid = () => {
                                     }}
                                   >
                                     {/* Toggle for xs and sm screens */}
-                                    <ToggleButtonGroup
+                                    {/* <ToggleButtonGroup
                                       value={bodyDetailTab}
                                     exclusive
                                     onChange={(e, newValue) => {
@@ -1231,9 +1231,9 @@ const MinistryCardGrid = () => {
                                         </ToggleButton>
                                       );
                                     })}
-                                  </ToggleButtonGroup>
+                                  </ToggleButtonGroup> */}
 
-                                  {/* Buttons for md and larger screens */}
+                                  {/* Buttons for md and larger screens 
                                   <Box
                                     sx={{
                                       display: { xs: "none", sm: "none", md: "flex" },
@@ -1269,7 +1269,7 @@ const MinistryCardGrid = () => {
                                         </Button>
                                       );
                                     })}
-                                  </Box>
+                                  </Box>*/}
                                   </Box>
 
                                   {selectedDepartment && (
@@ -1283,7 +1283,7 @@ const MinistryCardGrid = () => {
                                     </Link>
                                   )}
                                 </Box>
-                                <Box sx={{ flexGrow: 1, width: "100%" }}>
+                                {/*<Box sx={{ flexGrow: 1, width: "100%" }}>
                                   {selectedDepartment && bodyDetailTab === "bodies" && (
                                     <BodyTab departmentId={selectedDepartment.id} />
                                   )}
@@ -1295,6 +1295,11 @@ const MinistryCardGrid = () => {
                                         </AlertTitle>
                                       </Alert>
                                     </Box>
+                                  )}
+                                </Box>*/}
+                                <Box sx={{ flexGrow: 1, width: "100%" }}>
+                                  {selectedDepartment && (
+                                    <BodyTab departmentId={selectedDepartment.id} />
                                   )}
                                 </Box>
                               </DialogContent>
