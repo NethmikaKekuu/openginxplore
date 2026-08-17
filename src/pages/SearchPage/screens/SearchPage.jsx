@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
-import { Search, Loader2, AlertCircle } from "lucide-react";
+import { Search, Loader2, AlertCircle, X } from "lucide-react";
 import { useSearch } from "../../../hooks/useSearch";
 import { ENTITY_CONFIG } from "../../../constants/entityConfig";
 import { handleResultNavigation } from "../../../utils/navigationUtils";
@@ -75,6 +75,14 @@ export default function SearchPage() {
 
   const results = data?.results || [];
 
+  const handleClose = () => {
+    if (location.state?.from) {
+      navigate(location.state.from);
+    } else {
+      navigate("/executive-branch");
+    }
+  };
+
   /**
    * Handle search form submission
    */
@@ -82,7 +90,10 @@ export default function SearchPage() {
     e.preventDefault();
     const trimmedQuery = localQuery.trim();
     if (trimmedQuery.length >= 2) {
-      navigate(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+      navigate(`/search?q=${encodeURIComponent(trimmedQuery)}`, {
+        replace: true,
+        state: location.state,
+      });
     }
   };
 
@@ -101,7 +112,14 @@ export default function SearchPage() {
   // Empty query state - show search prompt
   if (!query || query.length < 2) {
     return (
-      <div className="p-4 md:p-8">
+      <div className="p-4 md:p-8 relative">
+        <button
+          onClick={handleClose}
+          className="absolute top-4 right-4 md:top-8 md:right-8 p-1.5 md:p-2 rounded-full hover:bg-primary/5 text-primary/60 hover:text-primary transition-colors"
+          title="Close search"
+        >
+          <X className="w-5 h-5 md:w-6 md:h-6" />
+        </button>
         <div className="max-w-2xl mx-auto text-center py-8 md:py-12">
           <Search className="w-8 h-8 md:w-12 md:h-12 text-primary/30 mx-auto mb-4" />
           <h2 className="text-base md:text-xl font-semibold text-primary mb-2">
@@ -135,15 +153,24 @@ export default function SearchPage() {
   return (
     <div className="p-2 md:p-4 lg:p-6 overflow-x-hidden">
       {/* Header */}
-      <div className="mb-3 md:mb-6">
-        <h1 className="text-base md:text-xl font-semibold text-primary">
-          Search results for "{query}"
-        </h1>
-        {data && (
-          <p className="text-[10px] md:text-sm text-primary/60 mt-0.5 md:mt-1">
-            Found {data.total || 0} result{data.total !== 1 ? "s" : ""}
-          </p>
-        )}
+      <div className="mb-3 md:mb-6 flex justify-between items-start gap-4">
+        <div className="min-w-0">
+          <h1 className="text-base md:text-xl font-semibold text-primary break-words">
+            Search results for "{query}"
+          </h1>
+          {data && (
+            <p className="text-[10px] md:text-sm text-primary/60 mt-0.5 md:mt-1">
+              Found {data.total || 0} result{data.total !== 1 ? "s" : ""}
+            </p>
+          )}
+        </div>
+        <button
+          onClick={handleClose}
+          className="p-1.5 md:p-2 rounded-full hover:bg-primary/5 text-primary/60 hover:text-primary transition-colors"
+          title="Close search"
+        >
+          <X className="w-5 h-5 md:w-6 md:h-6" />
+        </button>
       </div>
 
       {/* Loading State */}
