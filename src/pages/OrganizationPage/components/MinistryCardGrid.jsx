@@ -52,7 +52,6 @@ const MinistryCardGrid = () => {
   const [filterType, setFilterType] = useUrlParamState("filterByType", "all");
   const [viewMode, setViewMode] = useUrlParamState("viewMode", "Grid");
   const [activeTab, setActiveTab] = useState("departments");
-  //const [bodyDetailTab, setBodyDetailTab] = useState("bodies");
   const { colors } = useThemeContext();
   const location = useLocation();
   const navigate = useNavigate();
@@ -70,7 +69,7 @@ const MinistryCardGrid = () => {
   const urlDepartmentId = params.get("department");
 
   // --- Derived selection state (replaces useState + useEffect sync) ---
-  const selectedCard = useMemo(() => {
+  const selectedMinistry = useMemo(() => {
     if (!urlMinistryId || !activeMinistryList.length) return null;
     return (
       activeMinistryList.find(
@@ -80,7 +79,7 @@ const MinistryCardGrid = () => {
   }, [urlMinistryId, activeMinistryList]);
 
   const { data: departmentsData } = useDepartmentsByPortfolio(
-    selectedCard?.id || urlMinistryId,
+    selectedMinistry?.id || urlMinistryId,
     selectedDate?.date
   );
 
@@ -103,7 +102,7 @@ const MinistryCardGrid = () => {
   // but is reset whenever the selected ministry changes.
   useEffect(() => {
     setActiveTab("departments");
-  }, [selectedCard?.id]);
+  }, [selectedMinistry?.id]);
 
   const cabinetMinistriesCount = data?.NoOfCabinetMinistries || 0;
   const stateMinistriesCount = data?.NoOfStateMinistries || 0;
@@ -211,7 +210,6 @@ const MinistryCardGrid = () => {
   };
 
   const handleDepartmentClick = (dep) => {
-    //setBodyDetailTab("bodies");
 
     const params = new URLSearchParams(window.location.search);
     params.set("department", dep.id);
@@ -963,7 +961,7 @@ const MinistryCardGrid = () => {
                                 <StepIcon sx={{ fontSize: { xs: "1rem", md: "1.1rem" } }} label={step.label} />
                               )}
                               onClick={
-                                step.label === "Ministries" && activeStep !== 0 && selectedCard
+                                step.label === "Ministries" && activeStep !== 0 && selectedMinistry
                                   ? goToMinistriesList
                                   : step.label === "Bodies" && activeStep === 2
                                     ? goToDepartmentsList
@@ -987,11 +985,11 @@ const MinistryCardGrid = () => {
                                 },
                               }}
                             >
-                              {selectedCard && step.label === "Ministries" && activeStep !== 0 ? (
+                              {selectedMinistry && step.label === "Ministries" && activeStep !== 0 ? (
                                 <HierarchyEntry
-                                  title={selectedCard.name}
+                                  title={selectedMinistry.name}
                                   titleColor={colors.textPrimary}
-                                  badge={(selectedCard.ministers ?? []).map((minister) => ({
+                                  badge={(selectedMinistry.ministers ?? []).map((minister) => ({
                                     label: minister.name,
                                     to: minister.id
                                       ? `/person-profile/${minister.id}`
@@ -1163,113 +1161,6 @@ const MinistryCardGrid = () => {
                                       alignItems: "center",
                                     }}
                                   >
-                                    {/* Toggle for xs and sm screens */}
-                                    {/* <ToggleButtonGroup
-                                      value={bodyDetailTab}
-                                    exclusive
-                                    onChange={(e, newValue) => {
-                                      if (newValue !== null) {
-                                        setBodyDetailTab(newValue);
-                                      }
-                                    }}
-                                    sx={{
-                                      display: { xs: "flex", sm: "flex", md: "none" },
-                                      gap: 0,
-                                      "& .MuiToggleButtonGroup-grouped": {
-                                        border: `1px solid ${selectedPresident.themeColorLight}`,
-                                        borderRadius: "50px",
-                                        "&:not(:first-of-type)": {
-                                          borderLeft: `1px solid ${selectedPresident.themeColorLight}`,
-                                          marginLeft: "-1px",
-                                        },
-                                        "&:first-of-type": {
-                                          borderTopRightRadius: 0,
-                                          borderBottomRightRadius: 0,
-                                        },
-                                        "&:last-of-type": {
-                                          borderTopLeftRadius: 0,
-                                          borderBottomLeftRadius: 0,
-                                        },
-                                      },
-                                    }}
-                                  >
-                                    {["bodies", "people"].map((tab) => {
-                                      const label =
-                                        tab.charAt(0).toUpperCase() + tab.slice(1);
-                                      const isActive = bodyDetailTab === tab;
-                                      const IconComponent = tab === "bodies" ? ApartmentIcon : PeopleIcon;
-                                      return (
-                                        <ToggleButton
-                                          key={tab}
-                                          value={tab}
-                                          sx={{
-                                            textTransform: "none",
-                                            px: 2,
-                                            py: 0.8,
-                                            width: isActive ? "130px" : "70px",
-                                            display: "flex",
-                                            justifyContent: "center",
-                                            alignItems: "center",
-                                            backgroundColor: isActive
-                                              ? selectedPresident.themeColorLight
-                                              : "transparent",
-                                            color: isActive
-                                              ? colors.white
-                                              : selectedPresident.themeColorLight,
-                                            fontFamily: "poppins",
-                                            fontSize: "0.8rem",
-                                            "&.Mui-selected": {
-                                              backgroundColor: selectedPresident.themeColorLight,
-                                              color: colors.white,
-                                              "&:hover": {
-                                                backgroundColor: selectedPresident.themeColorLight,
-                                              },
-                                            },
-                                          }}
-                                        >
-                                          {isActive ? label : <IconComponent sx={{ fontSize: 18 }} />}
-                                        </ToggleButton>
-                                      );
-                                    })}
-                                  </ToggleButtonGroup> */}
-
-                                  {/* Buttons for md and larger screens 
-                                  <Box
-                                    sx={{
-                                      display: { xs: "none", sm: "none", md: "flex" },
-                                      gap: 2,
-                                    }}
-                                  >
-                                    {["bodies", "people"].map((tab) => {
-                                      const label =
-                                        tab.charAt(0).toUpperCase() + tab.slice(1);
-                                      const isActive = bodyDetailTab === tab;
-                                      return (
-                                        <Button
-                                          key={tab}
-                                          variant={isActive ? "contained" : "outlined"}
-                                          onClick={() => setBodyDetailTab(tab)}
-                                          sx={{
-                                            textTransform: "none",
-                                            borderRadius: "50px",
-                                            px: 3,
-                                            py: 0.8,
-                                            backgroundColor: isActive
-                                              ? selectedPresident.themeColorLight
-                                              : "transparent",
-                                            borderColor: selectedPresident.themeColorLight,
-                                            color: isActive
-                                              ? colors.white
-                                              : selectedPresident.themeColorLight,
-                                            fontFamily: "poppins",
-                                            fontSize: "1rem",
-                                          }}
-                                        >
-                                          {label}
-                                        </Button>
-                                      );
-                                    })}
-                                  </Box>*/}
                                   </Box>
 
                                   {selectedDepartment && (
@@ -1283,20 +1174,6 @@ const MinistryCardGrid = () => {
                                     </Link>
                                   )}
                                 </Box>
-                                {/*<Box sx={{ flexGrow: 1, width: "100%" }}>
-                                  {selectedDepartment && bodyDetailTab === "bodies" && (
-                                    <BodyTab departmentId={selectedDepartment.id} />
-                                  )}
-                                  {selectedDepartment && bodyDetailTab === "people" && (
-                                    <Box sx={{ width: "100%", mt: 4, display: "flex", justifyContent: "center" }}>
-                                      <Alert severity="info" sx={{ backgroundColor: "transparent", width: "100%", maxWidth: 600 }}>
-                                        <AlertTitle sx={{ fontFamily: "poppins", color: colors.textPrimary }}>
-                                          Info: No people found.
-                                        </AlertTitle>
-                                      </Alert>
-                                    </Box>
-                                  )}
-                                </Box>*/}
                                 <Box sx={{ flexGrow: 1, width: "100%" }}>
                                   {selectedDepartment && (
                                     <BodyTab departmentId={selectedDepartment.id} />
@@ -1360,7 +1237,7 @@ const MinistryCardGrid = () => {
                                         },
                                       }}
                                     >
-                                      {(selectedCard?.type === "stateMinister" && !selectedCard?.ministers?.[0]?.id ? ["departments"] : ["departments", "people"]).map((tab) => {
+                                      {(selectedMinistry?.type === "stateMinister" && !selectedMinistry?.ministers?.[0]?.id ? ["departments"] : ["departments", "people"]).map((tab) => {
                                         const label =
                                           tab.charAt(0).toUpperCase() +
                                           tab.slice(1);
@@ -1421,7 +1298,7 @@ const MinistryCardGrid = () => {
                                         gap: 2,
                                       }}
                                     >
-                                      {(selectedCard?.type === "stateMinister" && !selectedCard?.ministers?.[0]?.id ? ["departments"] : ["departments", "people"]).map((tab) => {
+                                      {(selectedMinistry?.type === "stateMinister" && !selectedMinistry?.ministers?.[0]?.id ? ["departments"] : ["departments", "people"]).map((tab) => {
                                         const label =
                                           tab.charAt(0).toUpperCase() +
                                           tab.slice(1);
@@ -1462,17 +1339,17 @@ const MinistryCardGrid = () => {
                                     width: "100%"
                                   }}>
                                     <>
-                                      {selectedCard &&
+                                      {selectedMinistry &&
                                         activeTab === "departments" && (
                                           <DepartmentTab
                                             selectedDate={
                                               selectedDate?.date || selectedDate
                                             }
-                                            ministryId={selectedCard?.id}
+                                            ministryId={selectedMinistry?.id}
                                             onDepartmentClick={handleDepartmentClick}
                                           />
                                         )}
-                                      {selectedCard && activeTab === "people" && (selectedCard.type !== "stateMinister" || selectedCard?.ministers?.[0]?.id) && (
+                                      {selectedMinistry && activeTab === "people" && (selectedMinistry.type !== "stateMinister" || selectedMinistry?.ministers?.[0]?.id) && (
                                         <PersonsTab
                                           selectedDate={
                                             selectedDate?.date || selectedDate

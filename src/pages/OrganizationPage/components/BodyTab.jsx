@@ -150,11 +150,9 @@ const BodyTab = ({ departmentId }) => {
                 mt: 2,
               }}
             >
-              {bodyList.map((body) => (
+              {bodyList.map((body, index) => (
                 <Box
-                  key={body.id}
-                  onMouseEnter={() => setHoveredBodyId(body.id)}
-                  onMouseLeave={() => setHoveredBodyId(null)}
+                  key={body.id || index}
                   sx={{
                     display: "flex",
                     alignItems: "center",
@@ -166,11 +164,11 @@ const BodyTab = ({ departmentId }) => {
                     py: 1.5,
                     minHeight: "64px",
                     backgroundColor: colors.backgroundWhite,
-                    boxShadow:
-                      hoveredBodyId === body.id
-                        ? "0 2px 8px rgba(0,0,0,0.08)"
-                        : "none",
+                    boxShadow: "none",
                     transition: "box-shadow 0.2s ease-in-out",
+                    "&:hover": {
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                    },
                   }}
                 >
                   <Typography
