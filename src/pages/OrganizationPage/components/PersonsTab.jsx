@@ -15,7 +15,7 @@ const PersonsTab = ({ selectedDate }) => {
 
   const selectedMinistry = new URLSearchParams(location.search).get("ministry");
 
-  const { data, isLoading: loading } = usePersonsByPortfolio(
+  const { data, isLoading: loading, isError,error, refetch, } = usePersonsByPortfolio(
     selectedMinistry,
     selectedDate
   );
@@ -39,6 +39,45 @@ const PersonsTab = ({ selectedDate }) => {
           loading={loading}
           size={25}
         />
+      </Box>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 1.5,
+          height: "20vh",
+          textAlign: "center",
+        }}
+      >
+        <Typography
+          sx={{
+            fontFamily: "Poppins",
+            fontSize: { xs: "0.8rem", md: "1rem" },
+            color: colors.textMuted,
+          }}
+        >
+          {error?.message || "Failed to load people for this ministry."}
+        </Typography>
+        <Typography
+          onClick={() => refetch()}
+          sx={{
+            cursor: "pointer",
+            color: selectedPresident.themeColorLight,
+            fontFamily: "Poppins",
+            fontWeight: 500,
+            fontSize: { xs: "0.75rem", md: "0.9rem" },
+            "&:hover": { textDecoration: "underline" },
+          }}
+        >
+          Retry
+        </Typography>
       </Box>
     );
   }
