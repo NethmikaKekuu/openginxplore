@@ -101,7 +101,10 @@ export default function SearchBar() {
     const trimmedQuery = query.trim();
     if (trimmedQuery.length >= 2) {
       setIsOpen(false);
-      navigate(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+      navigate(`/search?q=${encodeURIComponent(trimmedQuery)}`, {
+        replace: location.pathname === "/search",
+        state: location.pathname === "/search" ? location.state : { from: location.pathname + location.search }
+      });
     }
   };
 
