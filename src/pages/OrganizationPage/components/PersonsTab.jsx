@@ -8,14 +8,14 @@ import { Link, useLocation } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import { usePersonsByPortfolio } from "../../../hooks/usePersonsByPortfolio";
 
-const PersonsTab = ({ selectedDate }) => {
+const PersonsTab = ({ selectedDate, ministryId }) => {
   const { colors } = useThemeContext();
   const { selectedPresident } = useSelector((state) => state.presidency);
   const location = useLocation();
 
-  const selectedMinistry = new URLSearchParams(location.search).get("ministry");
+  const selectedMinistry = ministryId || new URLSearchParams(location.search).get("ministry");
 
-  const { data, isLoading: loading, isError,error, refetch, } = usePersonsByPortfolio(
+  const { data, isLoading: loading, isError,error, refetch } = usePersonsByPortfolio(
     selectedMinistry,
     selectedDate
   );
@@ -113,7 +113,7 @@ const PersonsTab = ({ selectedDate }) => {
 
             <Box sx={{ width: "100%", display: "flex", flexDirection: "column", gap: 2 }}>
               {/* Total People */}
-              {totalCount > 0 && (
+              {(
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2, width: "100%" }}>
                   <PersonIcon sx={{ color: colors.textMuted, fontSize: { xs: "0.8rem", md: "1rem" } }} />
                   <Box
@@ -222,7 +222,8 @@ const PersonsTab = ({ selectedDate }) => {
         </Typography>
 
         <Stack spacing={1} sx={{ mb: 2 }}>
-          {personList.map((person) => (
+        {personList.length > 0 ? (
+          personList.map((person) => (
             <Box
               key={person.id}
               sx={{
@@ -323,7 +324,18 @@ const PersonsTab = ({ selectedDate }) => {
                 </Link>
               </Box>
             </Box>
-          ))}
+          ))):(<Typography
+            sx={{
+              py: 2,
+              textAlign: "center",
+              color: colors.textMuted,
+              fontFamily: "Poppins",
+              fontSize: { xs: "0.8rem", md: "0.9rem" },
+            }}
+          >
+            No results found
+          </Typography>
+      )}
         </Stack>
       </Box>
     </>
