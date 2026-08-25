@@ -15,7 +15,7 @@ const PersonsTab = ({ selectedDate, ministryId }) => {
 
   const selectedMinistry = ministryId || new URLSearchParams(location.search).get("ministry");
 
-  const { data, isLoading: loading, isError,error, refetch } = usePersonsByPortfolio(
+  const { data, isLoading: loading, isError, error, refetch } = usePersonsByPortfolio(
     selectedMinistry,
     selectedDate
   );
@@ -96,7 +96,7 @@ const PersonsTab = ({ selectedDate, ministryId }) => {
               border: { xs: 0, sm: 0, md: `1px solid ${colors.backgroundWhite}` },
               p: { xs: 0, sm: 0, md: 2 },
               backgroundColor: colors.backgroundWhite,
-              borderRadius: { xs: 0, sm: 0, md: "14px" }
+              borderRadius: { xs: 0, sm: 0, md: "14px" },
             }}
           >
             <Typography
@@ -113,50 +113,48 @@ const PersonsTab = ({ selectedDate, ministryId }) => {
 
             <Box sx={{ width: "100%", display: "flex", flexDirection: "column", gap: 2 }}>
               {/* Total People */}
-              {(
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2, width: "100%" }}>
-                  <PersonIcon sx={{ color: colors.textMuted, fontSize: { xs: "0.8rem", md: "1rem" } }} />
-                  <Box
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2, width: "100%" }}>
+                <PersonIcon sx={{ color: colors.textMuted, fontSize: { xs: "0.8rem", md: "1rem" } }} />
+                <Box
+                  sx={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: { xs: "column", sm: "row" },
+                    alignItems: { xs: "flex-start", sm: "center" },
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Typography
                     sx={{
-                      flex: 1,
+                      fontFamily: "Poppins",
+                      fontWeight: 500,
+                      color: colors.textMuted,
+                      fontSize: { xs: "0.8rem", md: "1rem" },
                       display: "flex",
-                      flexDirection: { xs: "column", sm: "row" },
-                      alignItems: { xs: "flex-start", sm: "center" },
-                      justifyContent: "space-between"
+                      alignItems: "center",
+                      gap: 0.5,
                     }}
                   >
-                    <Typography
-                      sx={{
-                        fontFamily: "Poppins",
-                        fontWeight: 500,
-                        color: colors.textMuted,
-                        fontSize: { xs: "0.8rem", md: "1rem" },
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 0.5
-                      }}
-                    >
-                      Total People{" "}
-                      <InfoTooltip
-                        message="Total people under the minister on this date"
-                        iconColor={colors.textPrimary}
-                        iconSize={13}
-                        placement="right"
-                      />
-                    </Typography>
-                    <Typography
-                      sx={{
-                        fontFamily: "Poppins",
-                        fontSize: { xs: "0.8rem", md: "1rem" },
-                        fontWeight: 500,
-                        color: colors.textPrimary,
-                      }}
-                    >
-                      {totalCount}
-                    </Typography>
-                  </Box>
+                    Total People{" "}
+                    <InfoTooltip
+                      message="Total people under the minister on this date"
+                      iconColor={colors.textPrimary}
+                      iconSize={13}
+                      placement="right"
+                    />
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontFamily: "Poppins",
+                      fontSize: { xs: "0.8rem", md: "1rem" },
+                      fontWeight: 500,
+                      color: colors.textPrimary,
+                    }}
+                  >
+                    {totalCount}
+                  </Typography>
                 </Box>
-              )}
+              </Box>
 
               {/* New People */}
               {newCount > 0 && (
@@ -168,7 +166,7 @@ const PersonsTab = ({ selectedDate, ministryId }) => {
                       display: "flex",
                       flexDirection: { xs: "column", sm: "row" },
                       alignItems: { xs: "flex-start", sm: "center" },
-                      justifyContent: "space-between"
+                      justifyContent: "space-between",
                     }}
                   >
                     <Typography
@@ -179,7 +177,7 @@ const PersonsTab = ({ selectedDate, ministryId }) => {
                         fontSize: { xs: "0.8rem", md: "1rem" },
                         display: "flex",
                         alignItems: "center",
-                        gap: 0.5
+                        gap: 0.5,
                       }}
                     >
                       New People{" "}
@@ -222,120 +220,122 @@ const PersonsTab = ({ selectedDate, ministryId }) => {
         </Typography>
 
         <Stack spacing={1} sx={{ mb: 2 }}>
-        {personList.length > 0 ? (
-          personList.map((person) => (
-            <Box
-              key={person.id}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                p: { xs: 0, sm: 0, md: "12px 16px" },
-                gap: 2,
-                marginBottom: "12px",
-                transition: "all 0.3s ease",
-                cursor: "pointer",
-                borderBottom: `1px solid ${colors.backgroundWhite}`,
-              }}
-            >
-              <PersonIcon
-                fontSize="small"
-                sx={{
-                  color: selectedPresident?.themeColorLight,
-                  flexShrink: 0,
-                  mt: { xs: 0.5, sm: 0 }
-                }}
-              />
-
+          {personList.length > 0 ? (
+            personList.map((person) => (
               <Box
+                key={person.id}
                 sx={{
-                  flex: 1,
                   display: "flex",
-                  flexDirection: { xs: "column", sm: "row" },
-                  alignItems: { xs: "flex-start", sm: "center" },
-                  justifyContent: "space-between",
-                  gap: { xs: 0.5, sm: 2 }
+                  alignItems: "center",
+                  p: { xs: 0, sm: 0, md: "12px 16px" },
+                  gap: 2,
+                  marginBottom: "12px",
+                  transition: "all 0.3s ease",
+                  cursor: "pointer",
+                  borderBottom: `1px solid ${colors.backgroundWhite}`,
                 }}
               >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
-                  <Typography
-                    sx={{
-                      fontFamily: "Poppins, sans-serif",
-                      color: colors.textMuted,
-                      fontWeight: 500,
-                      fontSize: { xs: "0.8rem", md: "1rem" },
-                    }}
-                  >
-                    {person.name}
-                  </Typography>
-                  {person.isPresident && (
-                    <Typography
-                      variant="subtitle2"
-                      sx={{
-                        px: 0.8,
-                        py: 0.2,
-                        borderRadius: "4px",
-                        color: selectedPresident.themeColorLight,
-                        border: `1px solid ${selectedPresident.themeColorLight}`,
-                        fontFamily: "poppins",
-                        fontWeight: 600,
-                        fontSize: { xs: "0.55rem", md: "0.75rem" },
-                      }}
-                    >
-                      President
-                    </Typography>
-                  )}
-                  {person.isNew && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        px: 0.8,
-                        py: 0.2,
-                        borderRadius: "4px",
-                        backgroundColor: selectedPresident.themeColorLight,
-                        color: colors.white,
-                        fontFamily: "Poppins, sans-serif",
-                        fontWeight: 600,
-                        letterSpacing: "0.3px",
-                        fontSize: { xs: "0.55rem", md: "0.7rem" },
-                      }}
-                    >
-                      New
-                    </Typography>
-                  )}
-                </Box>
+                <PersonIcon
+                  fontSize="small"
+                  sx={{
+                    color: selectedPresident?.themeColorLight,
+                    flexShrink: 0,
+                    mt: { xs: 0.5, sm: 0 },
+                  }}
+                />
 
-                <Link
-                  to={`/person-profile/${person.id}`}
-                  state={{ mode: "back", from: location.pathname + location.search }}
-                  style={{ textDecoration: "none" }}
+                <Box
+                  sx={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: { xs: "column", sm: "row" },
+                    alignItems: { xs: "flex-start", sm: "center" },
+                    justifyContent: "space-between",
+                    gap: { xs: 0.5, sm: 2 },
+                  }}
                 >
-                  <Typography
-                    sx={{
-                      color: selectedPresident.themeColorLight,
-                      fontFamily: "Poppins, sans-serif",
-                      fontWeight: 500,
-                      fontSize: { xs: "0.65rem", md: "0.8rem" },
-                      transition: "all 0.3s ease",
-                      "&:hover": { textDecoration: "underline" },
-                    }}
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+                    <Typography
+                      sx={{
+                        fontFamily: "Poppins, sans-serif",
+                        color: colors.textMuted,
+                        fontWeight: 500,
+                        fontSize: { xs: "0.8rem", md: "1rem" },
+                      }}
+                    >
+                      {person.name}
+                    </Typography>
+                    {person.isPresident && (
+                      <Typography
+                        variant="subtitle2"
+                        sx={{
+                          px: 0.8,
+                          py: 0.2,
+                          borderRadius: "4px",
+                          color: selectedPresident.themeColorLight,
+                          border: `1px solid ${selectedPresident.themeColorLight}`,
+                          fontFamily: "poppins",
+                          fontWeight: 600,
+                          fontSize: { xs: "0.55rem", md: "0.75rem" },
+                        }}
+                      >
+                        President
+                      </Typography>
+                    )}
+                    {person.isNew && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          px: 0.8,
+                          py: 0.2,
+                          borderRadius: "4px",
+                          backgroundColor: selectedPresident.themeColorLight,
+                          color: colors.white,
+                          fontFamily: "Poppins, sans-serif",
+                          fontWeight: 600,
+                          letterSpacing: "0.3px",
+                          fontSize: { xs: "0.55rem", md: "0.7rem" },
+                        }}
+                      >
+                        New
+                      </Typography>
+                    )}
+                  </Box>
+
+                  <Link
+                    to={`/person-profile/${person.id}`}
+                    state={{ mode: "back", from: location.pathname + location.search }}
+                    style={{ textDecoration: "none" }}
                   >
-                    View Profile
-                  </Typography>
-                </Link>
+                    <Typography
+                      sx={{
+                        color: selectedPresident.themeColorLight,
+                        fontFamily: "Poppins, sans-serif",
+                        fontWeight: 500,
+                        fontSize: { xs: "0.65rem", md: "0.8rem" },
+                        transition: "all 0.3s ease",
+                        "&:hover": { textDecoration: "underline" },
+                      }}
+                    >
+                      View Profile
+                    </Typography>
+                  </Link>
+                </Box>
               </Box>
-            </Box>
-          ))):(<Typography
-            sx={{
-              py: 2,
-              textAlign: "center",
-              color: colors.textMuted,
-              fontFamily: "Poppins",
-              fontSize: { xs: "0.8rem", md: "0.9rem" },
-            }}
-          >
-            No results found
-          </Typography>
-      )}
+            ))
+          ) : (
+            <Typography
+              sx={{
+                py: 2,
+                textAlign: "center",
+                color: colors.textMuted,
+                fontFamily: "Poppins",
+                fontSize: { xs: "0.8rem", md: "0.9rem" },
+              }}
+            >
+              No results found
+            </Typography>
+          )}
         </Stack>
       </Box>
     </>
