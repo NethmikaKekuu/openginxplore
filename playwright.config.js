@@ -48,12 +48,12 @@ export default defineConfig({
 
   projects: [
     {
-      name: 'chromium-mobile',
-      use: { ...devices['Desktop Chrome'], viewport: { width: 667, height: 375 } },
+      name: 'mobile-chrome',
+      use: { ...devices['Pixel 7 landscape'] },
     },
     {
       name: 'chromium-tablet',
-      use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 } },
+      use: { ...devices['Galaxy Tab S4 landscape'] },
     },
     {
       name: 'chromium-desktop',
@@ -61,19 +61,19 @@ export default defineConfig({
     },
     {
       name: 'firefox-tablet',
-      use: { ...devices['Desktop Firefox'], viewport: { width: 768, height: 1024 } },
+      use: { ...devices['Desktop Firefox'], viewport: { width: 1024, height: 768 } }, // swapped to landscape too, for consistency
     },
     {
       name: 'firefox-desktop',
       use: { ...devices['Desktop Firefox'], viewport: { width: 1280, height: 800 } },
     },
     {
-      name: 'webkit-mobile',
-      use: { ...devices['Desktop Safari'], viewport: { width: 667, height: 375 } },
+      name: 'mobile-safari',
+      use: { ...devices['iPhone 14 landscape'] },
     },
     {
       name: 'webkit-tablet',
-      use: { ...devices['Desktop Safari'], viewport: { width: 768, height: 1024 } },
+      use: { ...devices['iPad Pro 11 landscape'] },
     },
     {
       name: 'webkit-desktop',
